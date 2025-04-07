@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   return (
@@ -17,11 +18,15 @@ const Hero = () => {
               CoLink Venture brings businesses together through powerful partnerships and sponsorships. Find the right connections to take your business to the next level.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button className="btn-primary text-base py-6 px-8 flex items-center gap-2">
-                Explore Partnerships <ArrowRight size={18} />
+              <Button className="btn-primary text-base py-6 px-8 flex items-center gap-2" asChild>
+                <Link to="/partnerships">
+                  Explore Partnerships <ArrowRight size={18} />
+                </Link>
               </Button>
-              <Button className="btn-secondary text-base py-6 px-8 flex items-center gap-2">
-                Discover Sponsorships <ArrowRight size={18} />
+              <Button className="btn-secondary text-base py-6 px-8 flex items-center gap-2" asChild>
+                <Link to="/sponsorships">
+                  Discover Sponsorships <ArrowRight size={18} />
+                </Link>
               </Button>
             </div>
             <p className="text-sm text-gray-500 pt-2">

@@ -8,6 +8,7 @@ import Footer from "@/components/landing/Footer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -84,7 +85,9 @@ const Index = () => {
                     Track and measure partnership success
                   </li>
                 </ul>
-                <Button className="btn-primary w-full">Explore Partnerships</Button>
+                <Button className="btn-primary w-full" asChild>
+                  <Link to="/partnerships">Explore Partnerships</Link>
+                </Button>
               </div>
               
               <div className="bg-gradient-to-br from-colink-purple/10 to-colink-purple/5 rounded-xl p-8 shadow-sm hover:shadow-md transition-shadow">
@@ -114,7 +117,9 @@ const Index = () => {
                     Manage and track sponsorship ROI
                   </li>
                 </ul>
-                <Button className="btn-secondary w-full">Discover Sponsorships</Button>
+                <Button className="btn-secondary w-full" asChild>
+                  <Link to="/sponsorships">Discover Sponsorships</Link>
+                </Button>
               </div>
             </div>
           </div>
@@ -131,8 +136,8 @@ const Index = () => {
                 Join thousands of businesses already collaborating on CoLink Venture. Start your 14-day free trial today.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button className="bg-white text-colink-blue hover:bg-gray-100 py-6 px-8 text-base">
-                  Start Free Trial
+                <Button className="bg-white text-colink-blue hover:bg-gray-100 py-6 px-8 text-base" asChild>
+                  <Link to="/partnerships">Start Free Trial</Link>
                 </Button>
                 <Button className="bg-transparent border border-white text-white hover:bg-white/10 py-6 px-8 text-base">
                   Schedule Demo

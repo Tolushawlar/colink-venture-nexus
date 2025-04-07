@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link } from "react-router-dom";
 
 const mainNavItems: NavItem[] = [
   {
@@ -53,13 +54,13 @@ const Navbar = () => {
     <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
       <div className="container-wide flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
-          <a href="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <img 
               src="/lovable-uploads/b2f72189-44d3-499b-820d-4f1b98ea3cb7.png" 
               alt="CoLink Venture" 
               className="h-8" 
             />
-          </a>
+          </Link>
           <nav className="hidden md:flex items-center gap-6">
             {mainNavItems.map((item, index) => (
               <a
@@ -79,12 +80,12 @@ const Navbar = () => {
               <DropdownMenuContent align="end" className="w-[240px]">
                 {platformNavItems.map((item, index) => (
                   <DropdownMenuItem key={index} asChild>
-                    <a href={item.href} className="p-2 cursor-pointer">
+                    <Link to={item.href} className="p-2 cursor-pointer">
                       <div>
                         <div className="text-sm font-medium">{item.title}</div>
                         <div className="text-xs text-muted-foreground">{item.description}</div>
                       </div>
-                    </a>
+                    </Link>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -126,14 +127,14 @@ const Navbar = () => {
             <div className="py-2">
               <p className="text-sm font-medium text-gray-500 mb-2">Platforms</p>
               {platformNavItems.map((item, index) => (
-                <a
+                <Link
                   key={index}
-                  href={item.href}
+                  to={item.href}
                   className="block py-2 text-base font-medium hover:text-colink-teal"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.title}
-                </a>
+                </Link>
               ))}
             </div>
             <div className="flex flex-col gap-2 pt-4">
