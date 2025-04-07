@@ -62,9 +62,9 @@ const Features = () => {
             <Card key={index} className="border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="pb-2">
                 <div className="h-12 w-12 rounded-lg bg-colink-blue/10 flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-colink-blue" />
+                  <feature.icon size={24} className="text-colink-blue" />
                 </div>
-                <CardTitle className="text-xl">{feature.title}</CardTitle>
+                <CardTitle>{feature.title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-base">
