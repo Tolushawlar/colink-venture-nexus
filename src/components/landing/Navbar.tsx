@@ -54,23 +54,25 @@ const Navbar = () => {
       <div className="container-wide flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
           <a href="/" className="flex items-center space-x-2">
-            <span className="text-xl font-bold text-colink-blue">
-              CoLink<span className="text-colink-purple">Venture</span>
-            </span>
+            <img 
+              src="/lovable-uploads/b2f72189-44d3-499b-820d-4f1b98ea3cb7.png" 
+              alt="CoLink Venture" 
+              className="h-8" 
+            />
           </a>
           <nav className="hidden md:flex items-center gap-6">
             {mainNavItems.map((item, index) => (
               <a
                 key={index}
                 href={item.href}
-                className="text-sm font-medium text-gray-600 hover:text-colink-blue transition-colors"
+                className="text-sm font-medium text-gray-600 hover:text-colink-teal transition-colors"
               >
                 {item.title}
               </a>
             ))}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-1 text-gray-600 hover:text-colink-blue">
+                <Button variant="ghost" className="flex items-center gap-1 text-gray-600 hover:text-colink-teal">
                   Platforms <ChevronDown size={16} />
                 </Button>
               </DropdownMenuTrigger>
@@ -91,8 +93,8 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-2">
-          <Button variant="outline" className="btn-outline">Log In</Button>
-          <Button className="btn-primary">Sign Up</Button>
+          <Button variant="outline" className="border-colink-navy text-colink-navy hover:bg-colink-navy/10">Log In</Button>
+          <Button className="bg-colink-navy hover:bg-colink-navy/90 text-white">Sign Up</Button>
         </div>
 
         <div className="md:hidden">
@@ -115,7 +117,7 @@ const Navbar = () => {
               <a
                 key={index}
                 href={item.href}
-                className="text-base font-medium hover:text-colink-blue transition-colors"
+                className="text-base font-medium hover:text-colink-teal transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 {item.title}
@@ -127,7 +129,7 @@ const Navbar = () => {
                 <a
                   key={index}
                   href={item.href}
-                  className="block py-2 text-base font-medium hover:text-colink-blue"
+                  className="block py-2 text-base font-medium hover:text-colink-teal"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.title}
@@ -135,8 +137,8 @@ const Navbar = () => {
               ))}
             </div>
             <div className="flex flex-col gap-2 pt-4">
-              <Button variant="outline" className="w-full">Log In</Button>
-              <Button className="btn-primary w-full">Sign Up</Button>
+              <Button variant="outline" className="border-colink-navy text-colink-navy hover:bg-colink-navy/10 w-full">Log In</Button>
+              <Button className="bg-colink-navy hover:bg-colink-navy/90 text-white w-full">Sign Up</Button>
             </div>
           </nav>
         </div>

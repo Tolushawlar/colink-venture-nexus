@@ -96,15 +96,15 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-colink-blue hover:bg-colink-blue/90 text-white py-2 px-4 rounded-md font-medium transition-colors;
+    @apply bg-colink-navy hover:bg-colink-navy/90 text-white py-2 px-4 rounded-md font-medium transition-colors;
   }
   
   .btn-secondary {
-    @apply bg-colink-purple hover:bg-colink-purple/90 text-white py-2 px-4 rounded-md font-medium transition-colors;
+    @apply bg-colink-teal hover:bg-colink-teal/90 text-white py-2 px-4 rounded-md font-medium transition-colors;
   }
   
   .btn-outline {
-    @apply border border-colink-blue text-colink-blue hover:bg-colink-blue/10 py-2 px-4 rounded-md font-medium transition-colors;
+    @apply border border-colink-navy text-colink-navy hover:bg-colink-navy/10 py-2 px-4 rounded-md font-medium transition-colors;
   }
   
   .section {

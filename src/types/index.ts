@@ -1,4 +1,6 @@
 
+import { LucideIcon } from "lucide-react";
+
 export interface NavItem {
   title: string;
   href: string;
@@ -20,7 +22,7 @@ export type PlatformType = "partnership" | "sponsorship";
 export interface FeatureItem {
   title: string;
   description: string;
-  icon: React.ComponentType;
+  icon: LucideIcon;
 }
 
 export interface PricingTier {

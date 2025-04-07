@@ -9,9 +9,9 @@ const Hero = () => {
       <div className="container-wide">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">
-            <h1 className="text-5xl font-bold leading-tight tracking-tight text-colink-dark">
+            <h1 className="text-5xl font-bold leading-tight tracking-tight text-colink-navy">
               Connect, Collaborate, and{" "}
-              <span className="text-colink-purple">Grow Together</span>
+              <span className="text-colink-teal">Grow Together</span>
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl">
               CoLink Venture brings businesses together through powerful partnerships and sponsorships. Find the right connections to take your business to the next level.
@@ -29,8 +29,8 @@ const Hero = () => {
             </p>
           </div>
           <div className="relative">
-            <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-colink-purple/10 rounded-full blur-3xl"></div>
-            <div className="absolute -top-10 -left-10 w-64 h-64 bg-colink-blue/10 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-colink-teal/10 rounded-full blur-3xl"></div>
+            <div className="absolute -top-10 -left-10 w-64 h-64 bg-colink-navy/10 rounded-full blur-3xl"></div>
             <div className="relative z-10 rounded-xl shadow-xl overflow-hidden bg-white p-2">
               <img
                 src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80"

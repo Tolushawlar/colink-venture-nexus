@@ -4,14 +4,16 @@ import { Separator } from "@/components/ui/separator";
 
 const Footer = () => {
   return (
-    <footer className="bg-colink-dark text-gray-300">
+    <footer className="bg-colink-navy text-gray-300">
       <div className="container-wide py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           <div className="lg:col-span-2">
             <a href="/" className="flex items-center space-x-2 mb-4">
-              <span className="text-xl font-bold text-white">
-                CoLink<span className="text-colink-purple">Venture</span>
-              </span>
+              <img 
+                src="/lovable-uploads/b2f72189-44d3-499b-820d-4f1b98ea3cb7.png" 
+                alt="CoLink Venture" 
+                className="h-8 bg-white p-1 rounded" 
+              />
             </a>
             <p className="text-gray-400 mb-4 max-w-md">
               CoLink Venture is your all-in-one platform for finding business 
@@ -45,22 +47,22 @@ const Footer = () => {
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Platform</h3>
             <ul className="mt-4 space-y-2">
               <li>
-                <a href="/partnerships" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/partnerships" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Partnerships
                 </a>
               </li>
               <li>
-                <a href="/sponsorships" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/sponsorships" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Sponsorships
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#pricing" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Pricing
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Security
                 </a>
               </li>
@@ -71,22 +73,22 @@ const Footer = () => {
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Company</h3>
             <ul className="mt-4 space-y-2">
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#about" className="text-gray-400 hover:text-colink-teal transition-colors">
                   About
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Blog
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Careers
                 </a>
               </li>
               <li>
-                <a href="#contact" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#contact" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Contact
                 </a>
               </li>
@@ -97,17 +99,17 @@ const Footer = () => {
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Legal</h3>
             <ul className="mt-4 space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Privacy
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Terms
                 </a>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Cookie Policy
                 </a>
               </li>

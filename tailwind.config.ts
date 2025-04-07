@@ -63,11 +63,13 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// CoLink Venture custom colors
+				// CoLink Venture custom colors - updated to match logo
 				colink: {
-					blue: '#0053a5',
-					purple: '#6366f1',
-					lightBlue: '#4286f5',
+					navy: '#2F3D73', // Dark blue from logo
+					teal: '#59BEC8', // Teal color from logo
+					blue: '#2F3D73', 
+					purple: '#59BEC8',
+					lightBlue: '#59BEC8',
 					dark: '#1A1F2C',
 					gray: '#8E9196',
 					lightGray: '#f6f8fa',

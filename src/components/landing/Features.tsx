@@ -6,7 +6,8 @@ import {
   Search, 
   MessageSquare, 
   Bot, 
-  ShieldCheck 
+  ShieldCheck,
+  LucideIcon 
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FeatureItem } from "@/types";
@@ -49,7 +50,7 @@ const Features = () => {
     <section className="section bg-white" id="solutions">
       <div className="container-wide">
         <div className="text-center space-y-4 mb-12">
-          <h2 className="text-3xl font-bold text-colink-dark">
+          <h2 className="text-3xl font-bold text-colink-navy">
             Your All-in-One Platform for Business Growth
           </h2>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -58,21 +59,24 @@ const Features = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <Card key={index} className="border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="h-12 w-12 rounded-lg bg-colink-blue/10 flex items-center justify-center mb-4">
-                  <feature.icon size={24} className="text-colink-blue" />
-                </div>
-                <CardTitle>{feature.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-base">
-                  {feature.description}
-                </CardDescription>
-              </CardContent>
-            </Card>
-          ))}
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <Card key={index} className="border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-2">
+                  <div className="h-12 w-12 rounded-lg bg-colink-teal/10 flex items-center justify-center mb-4">
+                    <Icon size={24} className="text-colink-teal" />
+                  </div>
+                  <CardTitle>{feature.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-base">
+                    {feature.description}
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </section>
