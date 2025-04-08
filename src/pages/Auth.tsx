@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -74,7 +73,7 @@ const Auth = () => {
   const handleSignup = async (values: SignupFormValues) => {
     setIsLoading(true);
     try {
-      await signUp(values.email, values.password, values.displayName);
+      await signUp(values.email, values.password, { displayName: values.displayName });
       setActiveTab("login");
       signupForm.reset();
     } catch (error) {

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { NavItem } from "@/types";
@@ -84,15 +85,23 @@ const Navbar = () => {
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             {mainNavItems.map((item, index) => (
-              <a
-                key={index}
-                href={item.href.startsWith("#") ? item.href : undefined}
-                to={!item.href.startsWith("#") ? item.href : undefined}
-                as={!item.href.startsWith("#") ? Link : "a"}
-                className="text-sm font-medium text-gray-600 hover:text-colink-teal transition-colors"
-              >
-                {item.title}
-              </a>
+              item.href.startsWith("#") ? (
+                <a
+                  key={index}
+                  href={item.href}
+                  className="text-sm font-medium text-gray-600 hover:text-colink-teal transition-colors"
+                >
+                  {item.title}
+                </a>
+              ) : (
+                <Link
+                  key={index}
+                  to={item.href}
+                  className="text-sm font-medium text-gray-600 hover:text-colink-teal transition-colors"
+                >
+                  {item.title}
+                </Link>
+              )
             ))}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
