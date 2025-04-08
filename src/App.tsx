@@ -8,24 +8,47 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Partnerships from "./pages/Partnerships";
 import Sponsorships from "./pages/Sponsorships";
-import React from "react"; // Add explicit React import
+import Auth from "./pages/Auth";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import React from "react";
 
 // Create a new QueryClient instance outside of the component
 const queryClient = new QueryClient();
 
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<Index />} />
+    <Route path="/auth" element={<Auth />} />
+    <Route 
+      path="/partnerships" 
+      element={
+        <ProtectedRoute>
+          <Partnerships />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/sponsorships" 
+      element={
+        <ProtectedRoute>
+          <Sponsorships />
+        </ProtectedRoute>
+      } 
+    />
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/partnerships" element={<Partnerships />} />
-          <Route path="/sponsorships" element={<Sponsorships />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <AppRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

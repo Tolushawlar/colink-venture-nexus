@@ -2,14 +2,16 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { NavItem } from "@/types";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const mainNavItems: NavItem[] = [
   {
@@ -49,6 +51,24 @@ const platformNavItems: NavItem[] = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+  
+  const handleNavigateToAuth = () => {
+    navigate("/auth");
+    setIsOpen(false);
+  };
+
+  // Get user initials for avatar fallback
+  const getUserInitials = () => {
+    if (!user) return "?";
+    const email = user.email || "";
+    return email.charAt(0).toUpperCase();
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
@@ -94,8 +114,33 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-2">
-          <Button variant="outline" className="border-colink-navy text-colink-navy hover:bg-colink-navy/10">Log In</Button>
-          <Button className="bg-colink-navy hover:bg-colink-navy/90 text-white">Sign Up</Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email || ""} />
+                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <User size={16} />
+                  <span>{user.email}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2 text-red-500" onClick={handleSignOut}>
+                  <LogOut size={16} />
+                  <span>Log Out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="outline" className="border-colink-navy text-colink-navy hover:bg-colink-navy/10" onClick={() => navigate("/auth")}>Log In</Button>
+              <Button className="bg-colink-navy hover:bg-colink-navy/90 text-white" onClick={() => navigate("/auth?tab=signup")}>Sign Up</Button>
+            </>
+          )}
         </div>
 
         <div className="md:hidden">
@@ -138,8 +183,32 @@ const Navbar = () => {
               ))}
             </div>
             <div className="flex flex-col gap-2 pt-4">
-              <Button variant="outline" className="border-colink-navy text-colink-navy hover:bg-colink-navy/10 w-full">Log In</Button>
-              <Button className="bg-colink-navy hover:bg-colink-navy/90 text-white w-full">Sign Up</Button>
+              {user ? (
+                <Button 
+                  variant="outline" 
+                  className="w-full flex items-center justify-center gap-2"
+                  onClick={handleSignOut}
+                >
+                  <LogOut size={16} />
+                  Log Out
+                </Button>
+              ) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    className="border-colink-navy text-colink-navy hover:bg-colink-navy/10 w-full"
+                    onClick={handleNavigateToAuth}
+                  >
+                    Log In
+                  </Button>
+                  <Button 
+                    className="bg-colink-navy hover:bg-colink-navy/90 text-white w-full"
+                    onClick={handleNavigateToAuth}
+                  >
+                    Sign Up
+                  </Button>
+                </>
+              )}
             </div>
           </nav>
         </div>
