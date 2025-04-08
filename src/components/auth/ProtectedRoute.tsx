@@ -5,9 +5,10 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  adminOnly?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = false }) => {
   const { user, isLoading } = useAuth();
   
   // Show loading state while checking authentication
@@ -24,7 +25,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to="/auth" replace />;
   }
   
-  // Render children if authenticated
+  // Check if route requires admin privileges
+  if (adminOnly) {
+    const isAdmin = user.email === "admin@colink.com" || user.user_metadata?.role === "admin";
+    
+    if (!isAdmin) {
+      return <Navigate to="/" replace />;
+    }
+  }
+  
+  // Render children if authenticated and passes role check
   return <>{children}</>;
 };
 

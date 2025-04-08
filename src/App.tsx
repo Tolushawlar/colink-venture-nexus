@@ -8,7 +8,10 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Partnerships from "./pages/Partnerships";
 import Sponsorships from "./pages/Sponsorships";
+import Pricing from "./pages/Pricing";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
+import AdminDashboard from "./pages/AdminDashboard";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import React from "react";
@@ -19,7 +22,16 @@ const queryClient = new QueryClient();
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
+    <Route path="/pricing" element={<Pricing />} />
     <Route path="/auth" element={<Auth />} />
+    <Route 
+      path="/onboarding" 
+      element={
+        <ProtectedRoute>
+          <Onboarding />
+        </ProtectedRoute>
+      } 
+    />
     <Route 
       path="/partnerships" 
       element={
@@ -33,6 +45,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Sponsorships />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/admin-dashboard" 
+      element={
+        <ProtectedRoute adminOnly={true}>
+          <AdminDashboard />
         </ProtectedRoute>
       } 
     />

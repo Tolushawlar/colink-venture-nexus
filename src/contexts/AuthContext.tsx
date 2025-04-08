@@ -4,13 +4,14 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
+import { AccountType, UserPlan } from "@/types";
 
 type AuthContextType = {
   session: Session | null;
   user: User | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name?: string) => Promise<void>;
+  signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -72,15 +73,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string, name?: string) => {
+  const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
     try {
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: {
-            name,
-          },
+          data: metadata || {},
         },
       });
 
@@ -90,6 +89,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: "Account created",
         description: "Please check your email to confirm your account.",
       });
+      
+      // If the user is created and has a selectedPlan, navigate to onboarding
+      if (metadata?.plan) {
+        navigate("/onboarding");
+      } else {
+        navigate("/");
+      }
     } catch (error: any) {
       toast({
         title: "Sign up failed",

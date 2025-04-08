@@ -33,3 +33,7 @@ export interface PricingTier {
   cta: string;
   popular?: boolean;
 }
+
+export type UserRole = "user" | "admin";
+export type UserPlan = "free" | "starter" | "professional" | "enterprise";
+export type AccountType = "partnership" | "sponsorship";
