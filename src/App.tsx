@@ -11,6 +11,7 @@ import Sponsorships from "./pages/Sponsorships";
 import Pricing from "./pages/Pricing";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -29,6 +30,14 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Onboarding />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/profile" 
+      element={
+        <ProtectedRoute>
+          <Profile />
         </ProtectedRoute>
       } 
     />

@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { NavItem } from "@/types";
-import { Menu, X, ChevronDown, User, LogOut, Settings } from "lucide-react";
+import { Menu, X, ChevronDown, User, LogOut, Settings, Edit } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,6 +68,23 @@ const Navbar = () => {
     if (!user) return "?";
     const email = user.email || "";
     return email.charAt(0).toUpperCase();
+  };
+
+  const navigateToDashboard = () => {
+    const accountType = user?.user_metadata?.accountType;
+    if (accountType === 'partnership') {
+      navigate('/partnerships');
+    } else if (accountType === 'sponsorship') {
+      navigate('/sponsorships');
+    } else {
+      navigate('/onboarding');
+    }
+    setIsOpen(false);
+  };
+
+  const navigateToProfile = () => {
+    navigate('/profile');
+    setIsOpen(false);
   };
 
   const isAdmin = user?.email === "admin@colink.com" || user?.user_metadata?.role === "admin";
@@ -140,6 +157,14 @@ const Navbar = () => {
                 <DropdownMenuItem className="flex items-center gap-2">
                   <User size={16} />
                   <span>{user.email}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2" onClick={navigateToDashboard}>
+                  <User size={16} />
+                  <span>My Dashboard</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2" onClick={navigateToProfile}>
+                  <Edit size={16} />
+                  <span>Edit Profile</span>
                 </DropdownMenuItem>
                 {isAdmin && (
                   <DropdownMenuItem asChild>

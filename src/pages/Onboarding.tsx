@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,6 @@ import * as z from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { AccountType } from "@/types";
-import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   accountType: z.enum(["partnership", "sponsorship"] as const),
@@ -60,7 +58,7 @@ const industries = [
 ];
 
 const Onboarding = () => {
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -79,26 +77,14 @@ const Onboarding = () => {
   
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      // Update user metadata with account type and profile info
-      const { error } = await supabase.auth.updateUser({
-        data: { 
-          accountType: values.accountType,
-          displayName: values.displayName,
-          bio: values.bio,
-          website: values.website,
-          industry: values.industry,
-          interests: values.interests
-        }
-      });
-      
-      if (error) throw error;
-      
-      // Here you would save additional profile data to Supabase if needed
-      console.log("Submitting profile data:", values);
-      
-      toast({
-        title: "Profile created!",
-        description: "Your profile has been set up successfully.",
+      // Update user profile with the form values
+      await updateUserProfile({
+        accountType: values.accountType,
+        displayName: values.displayName,
+        bio: values.bio,
+        website: values.website,
+        industry: values.industry,
+        interests: values.interests
       });
       
       // Navigate to the appropriate dashboard based on account type
