@@ -35,6 +35,7 @@ import * as z from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { AccountType } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   accountType: z.enum(["partnership", "sponsorship"] as const),
@@ -68,7 +69,7 @@ const Onboarding = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       accountType: "partnership",
-      displayName: user?.user_metadata?.name || "",
+      displayName: user?.user_metadata?.displayName || "",
       bio: "",
       website: "",
       industry: "",
@@ -78,10 +79,23 @@ const Onboarding = () => {
   
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      // Here you would save the profile data to Supabase
+      // Update user metadata with account type and profile info
+      const { error } = await supabase.auth.updateUser({
+        data: { 
+          accountType: values.accountType,
+          displayName: values.displayName,
+          bio: values.bio,
+          website: values.website,
+          industry: values.industry,
+          interests: values.interests
+        }
+      });
+      
+      if (error) throw error;
+      
+      // Here you would save additional profile data to Supabase if needed
       console.log("Submitting profile data:", values);
       
-      // Mock successful update
       toast({
         title: "Profile created!",
         description: "Your profile has been set up successfully.",

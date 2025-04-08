@@ -35,6 +35,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             title: "Welcome back!",
             description: "You've successfully signed in.",
           });
+          
+          // Navigate to appropriate dashboard based on user metadata
+          const accountType = currentSession?.user?.user_metadata?.accountType;
+          if (accountType === 'partnership') {
+            navigate('/partnerships');
+          } else if (accountType === 'sponsorship') {
+            navigate('/sponsorships');
+          } else {
+            // If no account type is set, redirect to onboarding
+            navigate('/onboarding');
+          }
         } else if (event === 'SIGNED_OUT') {
           toast({
             title: "Signed out",
@@ -62,7 +73,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) throw error;
-      navigate("/");
+      
+      // Navigation will be handled by the onAuthStateChange listener
     } catch (error: any) {
       toast({
         title: "Sign in failed",
@@ -90,12 +102,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: "Please check your email to confirm your account.",
       });
       
-      // If the user is created and has a selectedPlan, navigate to onboarding
-      if (metadata?.plan) {
-        navigate("/onboarding");
-      } else {
-        navigate("/");
-      }
+      // Direct users to onboarding to select account type
+      navigate("/onboarding");
     } catch (error: any) {
       toast({
         title: "Sign up failed",

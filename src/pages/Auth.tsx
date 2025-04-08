@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -62,7 +63,7 @@ const Auth = () => {
     setIsLoading(true);
     try {
       await signIn(values.email, values.password);
-      navigate("/");
+      // Navigation will be handled by the onAuthStateChange listener in AuthContext
     } catch (error) {
       console.error("Login error:", error);
     } finally {
@@ -74,8 +75,7 @@ const Auth = () => {
     setIsLoading(true);
     try {
       await signUp(values.email, values.password, { displayName: values.displayName });
-      setActiveTab("login");
-      signupForm.reset();
+      // Redirect to onboarding is handled in the signUp function
     } catch (error) {
       console.error("Signup error:", error);
     } finally {
