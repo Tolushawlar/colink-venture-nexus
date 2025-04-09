@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
@@ -9,8 +9,39 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+// Sample business data for search suggestions
+const businessSuggestions = [
+  { id: "1", name: "Tech Innovations Inc", industry: "Technology" },
+  { id: "2", name: "Green Earth Solutions", industry: "Environmental" },
+  { id: "3", name: "Global Finance Partners", industry: "Finance" },
+  { id: "4", name: "Creative Studios", industry: "Media & Entertainment" },
+  { id: "5", name: "Health First Solutions", industry: "Healthcare" },
+  { id: "6", name: "Smart Marketing Agency", industry: "Marketing" },
+  { id: "7", name: "Urban Architecture", industry: "Construction" },
+  { id: "8", name: "Foodie Delights", industry: "Food & Beverage" },
+];
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/partnerships?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
+  const filteredSuggestions = searchQuery
+    ? businessSuggestions.filter(business => 
+        business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        business.industry.toLowerCase().includes(searchQuery.toLowerCase()))
+    : [];
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -29,14 +60,54 @@ const Index = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <Input 
-                    type="text" 
-                    placeholder="Search for services, industries, or businesses..." 
-                    className="pl-10 py-6 rounded-lg"
-                  />
+                  <Popover open={open && filteredSuggestions.length > 0} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                        <Input 
+                          type="text" 
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search for services, industries, or businesses..." 
+                          className="pl-10 py-6 rounded-lg"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleSearch();
+                              setOpen(false);
+                            }
+                          }}
+                        />
+                      </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 w-[calc(100%-2rem)] max-w-xl" align="start">
+                      <Command>
+                        <CommandList>
+                          <CommandEmpty>No results found.</CommandEmpty>
+                          <CommandGroup heading="Suggestions">
+                            {filteredSuggestions.map((business) => (
+                              <CommandItem
+                                key={business.id}
+                                onSelect={() => {
+                                  setSearchQuery(business.name);
+                                  setOpen(false);
+                                  navigate(`/partnerships?business=${encodeURIComponent(business.id)}`);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                <Search className="mr-2 h-4 w-4" />
+                                <span>{business.name}</span>
+                                <span className="text-sm text-muted-foreground ml-2">
+                                  {business.industry}
+                                </span>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
-                <Button className="btn-primary py-6">Search</Button>
+                <Button className="btn-primary py-6" onClick={handleSearch}>Search</Button>
               </div>
             </div>
           </div>
@@ -137,10 +208,10 @@ const Index = () => {
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <Button className="bg-white text-colink-blue hover:bg-gray-100 py-6 px-8 text-base" asChild>
-                  <Link to="/partnerships">Start Free Trial</Link>
+                  <Link to="/auth?action=signup">Start Free Trial</Link>
                 </Button>
-                <Button className="bg-transparent border border-white text-white hover:bg-white/10 py-6 px-8 text-base">
-                  Schedule Demo
+                <Button className="bg-transparent border border-white text-white hover:bg-white/10 py-6 px-8 text-base" asChild>
+                  <Link to="/contact">Schedule Demo</Link>
                 </Button>
               </div>
             </div>

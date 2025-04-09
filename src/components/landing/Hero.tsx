@@ -3,8 +3,11 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Hero = () => {
+  const { user } = useAuth();
+  
   return (
     <section className="bg-gradient-to-b from-white to-gray-50 pt-10 pb-20">
       <div className="container-wide">
@@ -19,12 +22,12 @@ const Hero = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button className="btn-primary text-base py-6 px-8 flex items-center gap-2" asChild>
-                <Link to="/partnerships">
+                <Link to={user ? "/partnerships" : "/auth?redirect=/partnerships"}>
                   Explore Partnerships <ArrowRight size={18} />
                 </Link>
               </Button>
               <Button className="btn-secondary text-base py-6 px-8 flex items-center gap-2" asChild>
-                <Link to="/sponsorships">
+                <Link to={user ? "/sponsorships" : "/auth?redirect=/sponsorships"}>
                   Discover Sponsorships <ArrowRight size={18} />
                 </Link>
               </Button>
