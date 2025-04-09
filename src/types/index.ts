@@ -80,6 +80,7 @@ export type NavItem = {
   title: string;
   href: string;
   isActive?: boolean;
+  description?: string; // Adding this property to fix the type error
 };
 
 export type UserPlan = "free" | "basic" | "pro";
