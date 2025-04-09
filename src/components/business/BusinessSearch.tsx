@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -73,6 +74,7 @@ const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSe
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Effect to handle businessId if provided
   useEffect(() => {
@@ -98,9 +100,9 @@ const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSe
     return matchTerm && hasOffers;
   });
   
-  const handleCollaborateClick = (business: Business) => {
-    setSelectedBusiness(business);
-    setIsDialogOpen(true);
+  const handleConnectClick = (business: Business) => {
+    // Navigate to business details page
+    navigate(`/business/${business.id}?type=${platformType}`);
   };
   
   const handleScheduleAppointment = () => {
@@ -160,8 +162,8 @@ const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSe
                 </div>
               </CardContent>
               <CardFooter>
-                <Button className="w-full" onClick={() => handleCollaborateClick(business)}>
-                  {platformType === 'partnership' ? 'Partner' : 'Sponsor'}
+                <Button className="w-full" onClick={() => handleConnectClick(business)}>
+                  CONNECT
                 </Button>
               </CardFooter>
             </Card>

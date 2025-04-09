@@ -13,6 +13,10 @@ import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
+import Appointments from "./pages/Appointments";
+import Chats from "./pages/Chats";
+import Posts from "./pages/Posts";
+import BusinessDetails from "./pages/BusinessDetails";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import React from "react";
@@ -54,6 +58,38 @@ const AppRoutes = () => (
       element={
         <ProtectedRoute>
           <Sponsorships />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/appointments" 
+      element={
+        <ProtectedRoute>
+          <Appointments />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/chats" 
+      element={
+        <ProtectedRoute>
+          <Chats />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/posts" 
+      element={
+        <ProtectedRoute>
+          <Posts />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/business/:id" 
+      element={
+        <ProtectedRoute>
+          <BusinessDetails />
         </ProtectedRoute>
       } 
     />

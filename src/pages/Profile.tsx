@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +34,8 @@ import * as z from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/landing/Navbar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Camera } from "lucide-react";
 
 const formSchema = z.object({
   displayName: z.string().min(2, "Display name must be at least 2 characters"),
@@ -60,6 +62,7 @@ const Profile = () => {
   const { user, updateUserProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -82,17 +85,21 @@ const Profile = () => {
         industry: user.user_metadata?.industry || "",
         interests: user.user_metadata?.interests || "",
       });
+      // Set profile image from user metadata if available
+      setProfileImage(user.user_metadata?.avatarUrl || null);
     }
   }, [user, form]);
   
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      // Update user profile with form values and profile image
       await updateUserProfile({
         displayName: values.displayName,
         bio: values.bio,
         website: values.website,
         industry: values.industry,
-        interests: values.interests
+        interests: values.interests,
+        avatarUrl: profileImage
       });
       
       toast({
@@ -109,7 +116,33 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
     }
+  };
+  
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // For now, just create a local URL for the image
+      // In a real app, you would upload this to storage
+      const imageUrl = URL.createObjectURL(file);
+      setProfileImage(imageUrl);
+      
+      // Show success toast
+      toast({
+        title: "Image uploaded",
+        description: "Your profile picture has been updated.",
+      });
+    }
+  };
+
+  const getInitials = (name: string = "") => {
+    if (!name) return "U";
+    return name.substring(0, 2).toUpperCase();
   };
   
   return (
@@ -126,7 +159,38 @@ const Profile = () => {
             </CardHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)}>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <Avatar className="w-24 h-24 border-2 border-white shadow-md">
+                        {profileImage ? (
+                          <AvatarImage src={profileImage} alt="Profile" />
+                        ) : (
+                          <AvatarFallback className="text-lg">
+                            {getInitials(form.getValues("displayName"))}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <label 
+                        htmlFor="profile-image" 
+                        className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
+                      >
+                        <Camera className="h-4 w-4" />
+                        <span className="sr-only">Upload profile picture</span>
+                      </label>
+                      <input 
+                        id="profile-image" 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handleImageUpload}
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Click the camera icon to update your profile picture
+                    </p>
+                  </div>
+
                   <FormField
                     control={form.control}
                     name="displayName"

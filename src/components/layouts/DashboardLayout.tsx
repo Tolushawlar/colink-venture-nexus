@@ -21,7 +21,10 @@ import {
   LogOut,
   Building,
   UserCircle,
-  LayoutDashboard
+  LayoutDashboard,
+  Calendar,
+  MessageSquare,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -60,6 +63,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       title: "Business Directory",
       icon: Building,
       href: accountType === "sponsorship" ? "/sponsorships" : "/partnerships"
+    },
+    {
+      title: "Appointments",
+      icon: Calendar,
+      href: "/appointments"
+    },
+    {
+      title: "Chats",
+      icon: MessageSquare,
+      href: "/chats"
+    },
+    {
+      title: "Posts",
+      icon: FileText,
+      href: "/posts"
     }
   ];
   
@@ -75,8 +93,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
-        <Sidebar className="bg-gray-100 border-r border-gray-200">
-          <SidebarHeader className="flex items-center p-4 bg-gray-200">
+        <Sidebar className="bg-white border-r border-gray-200">
+          <SidebarHeader className="flex items-center p-4 bg-gray-100">
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
                 <AvatarImage src={user?.user_metadata?.avatarUrl} />
@@ -89,7 +107,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </div>
           </SidebarHeader>
           
-          <SidebarContent className="bg-gray-100">
+          <SidebarContent className="bg-white">
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
@@ -97,7 +115,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     asChild
                     isActive={location.pathname === item.href}
                     tooltip={item.title}
-                    className="text-gray-800 hover:bg-gray-200 data-[active=true]:bg-gray-200"
+                    className="text-gray-800 hover:bg-gray-100 data-[active=true]:bg-gray-100"
                   >
                     <Link to={item.href}>
                       <item.icon className="h-4 w-4" />
@@ -112,7 +130,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <SidebarFooter className="p-4 bg-gray-100 border-t border-gray-200">
             <Button 
               variant="outline" 
-              className="w-full justify-start bg-white hover:bg-gray-200" 
+              className="w-full justify-start bg-white hover:bg-gray-100" 
               onClick={signOut}
             >
               <LogOut className="mr-2 h-4 w-4" />

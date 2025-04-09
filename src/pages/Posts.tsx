@@ -1,0 +1,293 @@
+
+import React, { useState } from "react";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  Calendar,
+  MessageSquare,
+  Heart,
+  Share2,
+  Plus,
+  Image,
+  FileText,
+  Trash2
+} from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+
+// Mock posts data
+const mockPosts = [
+  {
+    id: "1",
+    title: "New Software Integration Service",
+    content: "We're excited to announce our new API integration service that helps businesses connect their systems seamlessly.",
+    type: "service",
+    createdAt: "2025-04-01T10:30:00",
+    likes: 24,
+    comments: 5
+  },
+  {
+    id: "2",
+    title: "Join Our Upcoming Tech Workshop",
+    content: "We're hosting a free workshop on AI implementation strategies for small businesses. Limited spots available!",
+    type: "announcement",
+    createdAt: "2025-03-28T14:45:00",
+    likes: 42,
+    comments: 12
+  },
+  {
+    id: "3",
+    title: "New Partnership with CloudTech Solutions",
+    content: "We're proud to announce our strategic partnership with CloudTech Solutions to bring advanced cloud services to our clients.",
+    type: "update",
+    createdAt: "2025-03-20T09:15:00",
+    likes: 38,
+    comments: 8
+  }
+];
+
+const Posts = () => {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [posts, setPosts] = useState(mockPosts);
+  const [showNewPostForm, setShowNewPostForm] = useState(false);
+  const [newPost, setNewPost] = useState({
+    title: "",
+    content: "",
+    type: "service"
+  });
+  
+  const handleCreatePost = () => {
+    // Validate form fields
+    if (!newPost.title.trim() || !newPost.content.trim() || !newPost.type) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Create new post
+    const post = {
+      id: Date.now().toString(),
+      title: newPost.title,
+      content: newPost.content,
+      type: newPost.type,
+      createdAt: new Date().toISOString(),
+      likes: 0,
+      comments: 0
+    };
+    
+    // Add post to the list
+    setPosts([post, ...posts]);
+    
+    // Show success toast
+    toast({
+      title: "Post Created",
+      description: "Your post has been published successfully.",
+    });
+    
+    // Reset form
+    setNewPost({
+      title: "",
+      content: "",
+      type: "service"
+    });
+    setShowNewPostForm(false);
+  };
+  
+  const handleDeletePost = (postId: string) => {
+    // Delete post
+    setPosts(posts.filter(post => post.id !== postId));
+    
+    // Show success toast
+    toast({
+      title: "Post Deleted",
+      description: "Your post has been deleted.",
+    });
+  };
+  
+  const formatDate = (timestamp: string) => {
+    return new Date(timestamp).toLocaleDateString();
+  };
+  
+  const getPostTypeLabel = (type: string) => {
+    switch (type) {
+      case "service":
+        return "Service Offer";
+      case "announcement":
+        return "Announcement";
+      case "update":
+        return "Latest Update";
+      default:
+        return type;
+    }
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Posts</h1>
+          <Button onClick={() => setShowNewPostForm(!showNewPostForm)}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Post
+          </Button>
+        </div>
+        
+        {showNewPostForm && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Post</CardTitle>
+              <CardDescription>Share a service offer, announcement, or update</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2" htmlFor="post-title">
+                  Post Title
+                </label>
+                <Input
+                  id="post-title"
+                  placeholder="Enter post title"
+                  value={newPost.title}
+                  onChange={(e) => setNewPost({...newPost, title: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2" htmlFor="post-type">
+                  Post Type
+                </label>
+                <Select
+                  value={newPost.type}
+                  onValueChange={(value) => setNewPost({...newPost, type: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select post type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="service">Service Offer</SelectItem>
+                    <SelectItem value="announcement">Announcement</SelectItem>
+                    <SelectItem value="update">Latest Update</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2" htmlFor="post-content">
+                  Post Content
+                </label>
+                <Textarea
+                  id="post-content"
+                  placeholder="Write your post content..."
+                  className="min-h-32"
+                  value={newPost.content}
+                  onChange={(e) => setNewPost({...newPost, content: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Add Media (Optional)
+                </label>
+                <div className="flex gap-2">
+                  <Button variant="outline" type="button">
+                    <Image className="mr-2 h-4 w-4" />
+                    Add Image
+                  </Button>
+                  <Button variant="outline" type="button">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Add Document
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button variant="outline" onClick={() => setShowNewPostForm(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreatePost}>Publish Post</Button>
+            </CardFooter>
+          </Card>
+        )}
+        
+        <div className="space-y-4">
+          {posts.map((post) => (
+            <Card key={post.id}>
+              <CardHeader className="pb-2">
+                <div className="flex justify-between">
+                  <div className="space-y-1">
+                    <CardTitle>{post.title}</CardTitle>
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <div className="flex items-center">
+                        <Calendar className="mr-1 h-3 w-3" />
+                        {formatDate(post.createdAt)}
+                      </div>
+                      <div className="px-1.5 py-0.5 bg-gray-100 rounded">
+                        {getPostTypeLabel(post.type)}
+                      </div>
+                    </div>
+                  </div>
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user?.user_metadata?.avatarUrl} />
+                    <AvatarFallback>
+                      {user?.user_metadata?.displayName?.substring(0, 2) || user?.email?.substring(0, 2) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+              </CardHeader>
+              <CardContent className="pb-4">
+                <p className="text-sm">{post.content}</p>
+              </CardContent>
+              <CardFooter className="border-t pt-4 flex justify-between">
+                <div className="flex space-x-4">
+                  <Button variant="ghost" size="sm" className="text-gray-600">
+                    <Heart className="mr-1 h-4 w-4" />
+                    <span>{post.likes}</span>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-gray-600">
+                    <MessageSquare className="mr-1 h-4 w-4" />
+                    <span>{post.comments}</span>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-gray-600">
+                    <Share2 className="mr-1 h-4 w-4" />
+                    <span>Share</span>
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-500"
+                  onClick={() => handleDeletePost(post.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default Posts;

@@ -1,13 +1,7 @@
 
-import { LucideIcon } from "lucide-react";
+export type AccountType = "partnership" | "sponsorship";
 
-export interface NavItem {
-  title: string;
-  href: string;
-  description?: string;
-}
-
-export interface Business {
+export type Business = {
   id: string;
   name: string;
   description: string;
@@ -15,25 +9,62 @@ export interface Business {
   industry: string;
   partnershipOffers?: string[];
   sponsorshipOffers?: string[];
-}
+  website?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  gallery?: string[];
+  posts?: BusinessPost[];
+};
 
-export type PlatformType = "partnership" | "sponsorship";
-
-export interface FeatureItem {
+export type BusinessPost = {
+  id: string;
   title: string;
-  description: string;
-  icon: LucideIcon;
-}
+  content: string;
+  date: string;
+  type: string;
+};
 
-export interface PricingTier {
-  name: string;
-  description: string;
-  price: number;
-  features: string[];
-  cta: string;
-  popular?: boolean;
-}
+export type UserProfile = {
+  id: string;
+  email: string;
+  displayName?: string;
+  bio?: string;
+  avatarUrl?: string;
+  website?: string;
+  industry?: string;
+  interests?: string[];
+  accountType: AccountType;
+};
 
-export type UserRole = "user" | "admin";
-export type UserPlan = "free" | "starter" | "professional" | "enterprise";
-export type AccountType = "partnership" | "sponsorship";
+export type Appointment = {
+  id: string;
+  businessId: string;
+  userId: string;
+  date: string;
+  time: string;
+  location: string;
+  status: "upcoming" | "completed" | "cancelled";
+  purpose: string;
+};
+
+export type ChatMessage = {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  text: string;
+  timestamp: string;
+  read: boolean;
+};
+
+export type Post = {
+  id: string;
+  userId: string;
+  title: string;
+  content: string;
+  type: "service" | "announcement" | "update";
+  createdAt: string;
+  updatedAt: string;
+  likes: number;
+  comments: number;
+};
