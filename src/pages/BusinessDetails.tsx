@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -30,8 +29,9 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Business } from "@/types";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
-// Mock business data - in a real app this would come from Supabase
 const mockBusinesses: Business[] = [
   {
     id: "1",
@@ -158,7 +158,6 @@ const BusinessDetails = () => {
   const searchParams = new URLSearchParams(location.search);
   const platformType = searchParams.get('type') || 'partnership';
   
-  // Fetch business details
   useEffect(() => {
     if (id) {
       const foundBusiness = mockBusinesses.find(b => b.id === id);
@@ -168,7 +167,6 @@ const BusinessDetails = () => {
     }
   }, [id]);
   
-  // Handle actions
   const handleContact = () => {
     toast({
       title: "Contact Request Sent",
@@ -194,7 +192,6 @@ const BusinessDetails = () => {
     });
   };
   
-  // Render loading state if business is not yet loaded
   if (!business) {
     return (
       <DashboardLayout>
@@ -208,7 +205,6 @@ const BusinessDetails = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Business Header */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex flex-col md:flex-row md:items-center gap-6">
             <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -240,7 +236,6 @@ const BusinessDetails = () => {
           </div>
         </div>
         
-        {/* Business Tabs */}
         <Tabs defaultValue="about">
           <TabsList className="grid grid-cols-3 md:grid-cols-5">
             <TabsTrigger value="about">About</TabsTrigger>
@@ -297,7 +292,6 @@ const BusinessDetails = () => {
                 <CardDescription>Available services and collaboration opportunities</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Partnership Offers */}
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Partnership Opportunities</h3>
                   {business.partnershipOffers && business.partnershipOffers.length > 0 ? (
@@ -319,7 +313,6 @@ const BusinessDetails = () => {
                   )}
                 </div>
                 
-                {/* Sponsorship Offers */}
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Sponsorship Opportunities</h3>
                   {business.sponsorshipOffers && business.sponsorshipOffers.length > 0 ? (

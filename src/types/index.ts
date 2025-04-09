@@ -68,3 +68,18 @@ export type Post = {
   likes: number;
   comments: number;
 };
+
+// Add missing type definitions
+export type FeatureItem = {
+  title: string;
+  description: string;
+  icon: React.ComponentType<any>;
+};
+
+export type NavItem = {
+  title: string;
+  href: string;
+  isActive?: boolean;
+};
+
+export type UserPlan = "free" | "basic" | "pro";
