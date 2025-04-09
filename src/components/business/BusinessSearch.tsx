@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +17,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Search, Calendar } from "lucide-react";
 import { Business } from "@/types";
@@ -65,13 +64,26 @@ const mockBusinesses: Business[] = [
 
 interface BusinessSearchProps {
   platformType: "partnership" | "sponsorship";
+  initialSearch?: string;
+  businessId?: string | null;
 }
 
-const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSearch = "", businessId = null }) => {
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  
+  // Effect to handle businessId if provided
+  useEffect(() => {
+    if (businessId) {
+      const business = mockBusinesses.find(b => b.id === businessId);
+      if (business) {
+        setSelectedBusiness(business);
+        setIsDialogOpen(true);
+      }
+    }
+  }, [businessId]);
   
   const filteredBusinesses = mockBusinesses.filter(business => {
     const matchTerm = business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
