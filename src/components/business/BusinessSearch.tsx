@@ -27,6 +27,7 @@ import { useToast } from "@/components/ui/use-toast";
 const mockBusinesses: Business[] = [
   {
     id: "1",
+    user_id: "user-tech-solutions", // Added user_id property
     name: "Tech Solutions Inc",
     description: "Enterprise software solutions provider specializing in AI and automation.",
     logo: "https://via.placeholder.com/150",
@@ -36,6 +37,7 @@ const mockBusinesses: Business[] = [
   },
   {
     id: "2",
+    user_id: "user-creative-studios", // Added user_id property
     name: "Creative Studios",
     description: "Creative design agency offering branding, web design, and digital marketing.",
     logo: "https://via.placeholder.com/150",
@@ -45,6 +47,7 @@ const mockBusinesses: Business[] = [
   },
   {
     id: "3",
+    user_id: "user-marketing-experts", // Added user_id property
     name: "Marketing Experts",
     description: "Full-service marketing agency with expertise in digital and traditional channels.",
     logo: "https://via.placeholder.com/150",
@@ -54,6 +57,7 @@ const mockBusinesses: Business[] = [
   },
   {
     id: "4",
+    user_id: "user-event-masters", // Added user_id property
     name: "Event Masters",
     description: "Professional event planning and management services for corporate clients.",
     logo: "https://via.placeholder.com/150",
