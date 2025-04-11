@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
@@ -13,6 +13,8 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 
 // Sample business data for search suggestions
 const businessSuggestions = [
@@ -26,10 +28,58 @@ const businessSuggestions = [
   { id: "8", name: "Foodie Delights", industry: "Food & Beverage" },
 ];
 
+// Ecosystem data
+const ecosystemData = [
+  {
+    title: "Individuals",
+    description: "Connect with organizations and businesses to find opportunities for personal growth and community involvement.",
+    imageSrc: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80"
+  },
+  {
+    title: "Organizations",
+    description: "Build networks with other organizations to expand your reach and impact through strategic partnerships.",
+    imageSrc: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80"
+  },
+  {
+    title: "Communities",
+    description: "Connect community initiatives with resources and partners to create sustainable development and engagement.",
+    imageSrc: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80"
+  },
+  {
+    title: "Businesses",
+    description: "Find partnership and sponsorship opportunities to grow your business through strategic collaborations.",
+    imageSrc: "https://images.unsplash.com/photo-1556761175-5b46a572b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80"
+  },
+];
+
 const Index = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Fetch featured businesses from database
+  useEffect(() => {
+    const fetchFeaturedBusinesses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("business_profiles")
+          .select("*")
+          .limit(6);
+          
+        if (error) throw error;
+        
+        setFeaturedBusinesses(data || []);
+      } catch (error) {
+        console.error("Error fetching featured businesses:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchFeaturedBusinesses();
+  }, []);
   
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -50,6 +100,40 @@ const Index = () => {
         <Hero />
         
         <BenefitSection />
+        
+        {/* Who Benefits Section */}
+        <section className="bg-white py-16">
+          <div className="container-wide">
+            <div className="max-w-3xl mx-auto text-center mb-10">
+              <h2 className="text-3xl font-bold text-colink-dark mb-4">
+                Who Benefits From Our Connected Ecosystem?
+              </h2>
+              <p className="text-gray-600">
+                At CoLink Venture, we understand the power of sponsorship in creating meaningful connections between brands and their target audience. We specialize in helping businesses and organizations find the perfect sponsorship opportunities that align with their goals, values, and target market. Whether you are looking to sponsor a sports event, a music festival, a charitable cause, or any other type of sponsorship, we have you covered.
+              </p>
+            </div>
+            
+            <h3 className="text-xl font-semibold text-center mb-6">Explore our connected ecosystem for:</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {ecosystemData.map((item, index) => (
+                <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="h-48 overflow-hidden">
+                    <img 
+                      src={item.imageSrc} 
+                      alt={item.title} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <CardContent className="p-4">
+                    <h4 className="text-xl font-semibold mb-2">{item.title}</h4>
+                    <p className="text-gray-600 text-sm">{item.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
         
         {/* Service Search Section */}
         <section className="bg-white py-16">
@@ -117,7 +201,7 @@ const Index = () => {
         </section>
         
         <Features />
-        <BusinessSlider />
+        <BusinessSlider businesses={featuredBusinesses} loading={loading} />
         
         {/* Platform Selection */}
         <section className="section bg-white">

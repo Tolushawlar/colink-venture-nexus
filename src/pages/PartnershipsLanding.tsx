@@ -4,26 +4,33 @@ import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap, Heart, Building, Palette, Landmark, Dumbbell, Utensils, Computer, Leaf, Briefcase, Home, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface PartnershipCardProps {
   title: string;
   description: string;
-  icon: React.ReactNode;
-  iconBgColor: string;
+  imageSrc: string;
+  imageAlt: string;
 }
 
-const PartnershipCard = ({ title, description, icon, iconBgColor }: PartnershipCardProps) => (
+const PartnershipCard = ({ title, description, imageSrc, imageAlt }: PartnershipCardProps) => (
   <Card className="h-full transition-all hover:shadow-md hover:-translate-y-1">
-    <CardHeader className="pb-4">
-      <div className={`w-14 h-14 rounded-full ${iconBgColor} flex items-center justify-center mb-4`}>
-        {icon}
+    <CardHeader className="pb-2 relative p-0 overflow-hidden rounded-t-lg">
+      <div className="h-48">
+        <img 
+          src={imageSrc} 
+          alt={imageAlt} 
+          className="w-full h-full object-cover" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
+          <div className="p-4">
+            <CardTitle className="text-xl text-white">{title}</CardTitle>
+          </div>
+        </div>
       </div>
-      <CardTitle className="text-xl text-colink-navy">{title}</CardTitle>
     </CardHeader>
-    <CardContent>
+    <CardContent className="pt-4">
       <p className="text-gray-600">{description}</p>
     </CardContent>
     <CardFooter>
@@ -41,74 +48,74 @@ const PartnershipsLanding = () => {
     {
       title: "School and Education",
       description: "Partner with programs to enhance student learning, connect with service providers for additional educational opportunities.",
-      icon: <GraduationCap size={28} className="text-white" />,
-      iconBgColor: "bg-blue-500",
+      imageSrc: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "School and Education",
     },
     {
       title: "Social Service",
       description: "Connect with programs to address local needs, create long-term equity programs, and build meaningful relationships.",
-      icon: <Heart size={28} className="text-white" />,
-      iconBgColor: "bg-pink-500",
+      imageSrc: "https://images.unsplash.com/photo-1593113598332-cd288d649433?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "Social Service",
     },
     {
       title: "Healthcare",
       description: "Align with outreach programs sharing your mission, providing targeted healthcare services to address community needs.",
-      icon: <Heart size={28} className="text-white" />,
-      iconBgColor: "bg-red-500",
+      imageSrc: "https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "Healthcare",
     },
     {
       title: "Art & Culture",
       description: "Collaborate with artists, cultural institutions, and sponsor joint exhibitions and performances to support art and culture.",
-      icon: <Palette size={28} className="text-white" />,
-      iconBgColor: "bg-purple-500",
+      imageSrc: "https://images.unsplash.com/photo-1561214078-f3247647fc5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "Art and Culture",
     },
     {
       title: "Government",
       description: "Liaise with diverse external support programs, ensuring equity and justice, and support community leaders and changemakers.",
-      icon: <Landmark size={28} className="text-white" />,
-      iconBgColor: "bg-gray-700",
+      imageSrc: "https://images.unsplash.com/photo-1603201667141-5a2d4c673378?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "Government",
     },
     {
       title: "Recreation",
       description: "Collaborate with community programs to identify recreational programs supporting multiple demographics and driving positive change.",
-      icon: <Dumbbell size={28} className="text-white" />,
-      iconBgColor: "bg-green-400",
+      imageSrc: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "Recreation",
     },
     {
       title: "Food and Hospitality",
       description: "Connect with industry professionals to promote joint events, bringing together food, hospitality, and other industries.",
-      icon: <Utensils size={28} className="text-white" />,
-      iconBgColor: "bg-yellow-500",
+      imageSrc: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "Food and Hospitality",
     },
     {
       title: "Technology",
       description: "Connect with tech startups, entrepreneurs, and innovators to stay updated on advancements and explore partnerships.",
-      icon: <Computer size={28} className="text-white" />,
-      iconBgColor: "bg-blue-600",
+      imageSrc: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "Technology",
     },
     {
       title: "Environment",
       description: "Collaborate with environmental organizations to address pressing issues, promote conservation, and create a sustainable future.",
-      icon: <Leaf size={28} className="text-white" />,
-      iconBgColor: "bg-green-500",
+      imageSrc: "https://images.unsplash.com/photo-1475113548554-5a36f1f523d6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "Environment",
     },
     {
       title: "Business and Entrepreneurship",
       description: "Network with business owners, entrepreneurs, and industry leaders to share knowledge, resources, and support growth.",
-      icon: <Briefcase size={28} className="text-white" />,
-      iconBgColor: "bg-indigo-500",
+      imageSrc: "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "Business and Entrepreneurship",
     },
     {
       title: "Community Development",
       description: "Engage with community development programs to create positive change, improve quality of life, and foster a strong community.",
-      icon: <Home size={28} className="text-white" />,
-      iconBgColor: "bg-orange-500",
+      imageSrc: "https://images.unsplash.com/photo-1518398046578-8cca57782e17?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "Community Development",
     },
     {
       title: "Nonprofit and Philanthropy",
       description: "Connect with non-profit organizations and philanthropic initiatives to support missions, contribute to causes, and make a difference.",
-      icon: <Users size={28} className="text-white" />,
-      iconBgColor: "bg-teal-500",
+      imageSrc: "https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
+      imageAlt: "Nonprofit and Philanthropy",
     }
   ];
 
@@ -146,14 +153,14 @@ const PartnershipsLanding = () => {
               </p>
             </div>
             
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
               {partnershipsData.map((partnership, index) => (
                 <PartnershipCard 
                   key={index}
                   title={partnership.title}
                   description={partnership.description}
-                  icon={partnership.icon}
-                  iconBgColor={partnership.iconBgColor}
+                  imageSrc={partnership.imageSrc}
+                  imageAlt={partnership.imageAlt}
                 />
               ))}
             </div>

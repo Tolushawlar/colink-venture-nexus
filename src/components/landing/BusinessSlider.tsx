@@ -3,63 +3,68 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Business } from "@/types";
+import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const businesses: Business[] = [
-  {
-    id: "1",
-    name: "TechSolutions Inc.",
-    description: "Providing innovative tech solutions for modern businesses.",
-    logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3603?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Technology",
-    partnershipOffers: ["Software Integration", "Tech Consulting"],
-  },
-  {
-    id: "2",
-    name: "EcoFriendly Solutions",
-    description: "Sustainable products and services for eco-conscious businesses.",
-    logo: "https://images.unsplash.com/photo-1542744094-24638eff58bb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Sustainability",
-    sponsorshipOffers: ["Green Events", "Environmental Campaigns"],
-  },
-  {
-    id: "3",
-    name: "Creative Marketing",
-    description: "Full-service marketing agency specializing in digital campaigns.",
-    logo: "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Marketing",
-    partnershipOffers: ["Brand Collaborations", "Joint Marketing"],
-    sponsorshipOffers: ["Event Marketing"],
-  },
-  {
-    id: "4",
-    name: "Finance Experts LLC",
-    description: "Professional financial services for businesses of all sizes.",
-    logo: "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Finance",
-    partnershipOffers: ["Financial Consulting"],
-  },
-  {
-    id: "5",
-    name: "HealthPlus",
-    description: "Health and wellness solutions for corporate programs.",
-    logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjN8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Health",
-    sponsorshipOffers: ["Wellness Events", "Health Initiatives"],
-  },
-  {
-    id: "6",
-    name: "Global Logistics",
-    description: "Worldwide shipping and logistics services for businesses.",
-    logo: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjl8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Logistics",
-    partnershipOffers: ["Logistics Solutions", "Supply Chain Integration"],
-  },
-];
+interface BusinessSliderProps {
+  businesses: any[];
+  loading: boolean;
+}
 
-const BusinessSlider = () => {
+const BusinessSlider: React.FC<BusinessSliderProps> = ({ businesses = [], loading = false }) => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  // Sample business data as fallback
+  const sampleBusinesses = [
+    {
+      id: "1",
+      name: "TechSolutions Inc.",
+      description: "Providing innovative tech solutions for modern businesses.",
+      logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3603?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
+      industry: "Technology",
+    },
+    {
+      id: "2",
+      name: "EcoFriendly Solutions",
+      description: "Sustainable products and services for eco-conscious businesses.",
+      logo: "https://images.unsplash.com/photo-1542744094-24638eff58bb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
+      industry: "Sustainability",
+    },
+    {
+      id: "3",
+      name: "Creative Marketing",
+      description: "Full-service marketing agency specializing in digital campaigns.",
+      logo: "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
+      industry: "Marketing",
+    },
+    {
+      id: "4",
+      name: "Finance Experts LLC",
+      description: "Professional financial services for businesses of all sizes.",
+      logo: "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
+      industry: "Finance",
+    },
+    {
+      id: "5",
+      name: "HealthPlus",
+      description: "Health and wellness solutions for corporate programs.",
+      logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjN8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
+      industry: "Health",
+    },
+    {
+      id: "6",
+      name: "Global Logistics",
+      description: "Worldwide shipping and logistics services for businesses.",
+      logo: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjl8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
+      industry: "Logistics",
+    },
+  ];
+
+  const displayedBusinesses = businesses.length > 0 ? businesses : sampleBusinesses;
 
   const scrollLeft = () => {
     if (sliderRef.current) {
@@ -88,6 +93,31 @@ const BusinessSlider = () => {
       return () => slider.removeEventListener("scroll", handleScroll);
     }
   }, []);
+
+  const handleBusinessClick = (businessId: string) => {
+    navigate(`/business/${businessId}`);
+  };
+
+  // Render skeleton loading state
+  const renderSkeletons = () => {
+    return Array(6).fill(0).map((_, index) => (
+      <Card key={`skeleton-${index}`} className="min-w-[320px] shadow-sm">
+        <CardContent className="p-0">
+          <Skeleton className="h-40 w-full" />
+          <div className="p-5">
+            <Skeleton className="h-4 w-20 mb-3" />
+            <Skeleton className="h-6 w-44 mb-2" />
+            <Skeleton className="h-4 w-full mb-4" />
+            <Skeleton className="h-4 w-full mb-3" />
+            <div className="flex gap-2">
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    ));
+  };
 
   return (
     <section className="section bg-gray-50">
@@ -128,38 +158,61 @@ const BusinessSlider = () => {
           style={{ scrollbarWidth: "none" }}
         >
           <div className="flex gap-6">
-            {businesses.map((business) => (
-              <Card key={business.id} className="min-w-[320px] shadow-sm">
-                <CardContent className="p-0">
-                  <div className="h-40 overflow-hidden">
-                    <img
-                      src={business.logo}
-                      alt={business.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <div className="inline-block px-3 py-1 text-xs font-medium bg-gray-100 rounded-full mb-3">
-                      {business.industry}
+            {loading ? (
+              renderSkeletons()
+            ) : (
+              displayedBusinesses.map((business) => (
+                <Card 
+                  key={business.id} 
+                  className="min-w-[320px] shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => handleBusinessClick(business.id)}
+                >
+                  <CardContent className="p-0">
+                    <div className="h-40 overflow-hidden">
+                      <img
+                        src={business.logo || `https://images.unsplash.com/photo-1560179707-f14e90ef3603?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80`}
+                        alt={business.name}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{business.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{business.description}</p>
-                    <div className="flex gap-2">
-                      {business.partnershipOffers && (
-                        <Button variant="outline" size="sm" className="text-xs">
-                          Partnerships
-                        </Button>
-                      )}
-                      {business.sponsorshipOffers && (
-                        <Button variant="outline" size="sm" className="text-xs">
-                          Sponsorships
-                        </Button>
-                      )}
+                    <div className="p-5">
+                      <div className="inline-block px-3 py-1 text-xs font-medium bg-gray-100 rounded-full mb-3">
+                        {business.industry || "Business"}
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2">{business.name}</h3>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{business.description || "No description provided."}</p>
+                      <div className="flex gap-2">
+                        <Link to={`/auth`}>
+                          <Button variant="outline" size="sm" className="text-xs">
+                            View Details
+                          </Button>
+                        </Link>
+                        <Link to={`/auth`}>
+                          <Button size="sm" className="text-xs">
+                            Connect
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                  </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+
+            {/* Subscription prompt card for featured business */}
+            {!loading && (
+              <Card className="min-w-[320px] shadow-sm bg-gradient-to-br from-colink-blue/10 to-colink-purple/10">
+                <CardContent className="p-6 flex flex-col justify-center h-full">
+                  <h3 className="text-xl font-semibold mb-4">Feature Your Business</h3>
+                  <p className="text-gray-600 mb-6">
+                    Get more visibility by featuring your business on our homepage and reach potential partners and clients.
+                  </p>
+                  <Button className="w-full" asChild>
+                    <Link to="/auth">Upgrade to Premium</Link>
+                  </Button>
                 </CardContent>
               </Card>
-            ))}
+            )}
           </div>
         </div>
       </div>
