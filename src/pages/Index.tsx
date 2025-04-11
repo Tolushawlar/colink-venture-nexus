@@ -157,7 +157,7 @@ const Index = () => {
                   </li>
                 </ul>
                 <Button className="btn-primary w-full" asChild>
-                  <Link to="/partnerships">Explore Partnerships</Link>
+                  <Link to="/partnerships-info">Explore Partnerships</Link>
                 </Button>
               </div>
               
@@ -189,7 +189,7 @@ const Index = () => {
                   </li>
                 </ul>
                 <Button className="btn-secondary w-full" asChild>
-                  <Link to="/sponsorships">Discover Sponsorships</Link>
+                  <Link to="/sponsorships-info">Discover Sponsorships</Link>
                 </Button>
               </div>
             </div>

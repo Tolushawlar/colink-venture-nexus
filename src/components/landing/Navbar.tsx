@@ -20,6 +20,10 @@ const mainNavItems: NavItem[] = [
     href: "/",
   },
   {
+    title: "About Us",
+    href: "/about-us",
+  },
+  {
     title: "Solutions",
     href: "#solutions",
   },
@@ -28,24 +32,20 @@ const mainNavItems: NavItem[] = [
     href: "/pricing",
   },
   {
-    title: "About Us",
-    href: "#about",
-  },
-  {
     title: "Contact",
-    href: "#contact",
+    href: "/contact-us",
   },
 ];
 
 const platformNavItems: NavItem[] = [
   {
     title: "Partnerships",
-    href: "/partnerships",
+    href: "/partnerships-info",
     description: "Connect with businesses for strategic partnerships",
   },
   {
     title: "Sponsorships",
-    href: "/sponsorships",
+    href: "/sponsorships-info",
     description: "Find sponsors for your initiatives and events",
   },
 ];

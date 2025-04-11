@@ -22,12 +22,12 @@ const Hero = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button className="btn-primary text-base py-6 px-8 flex items-center gap-2" asChild>
-                <Link to={user ? "/partnerships" : "/auth?redirect=/partnerships"}>
+                <Link to={user ? "/partnerships" : "/partnerships-info"}>
                   Explore Partnerships <ArrowRight size={18} />
                 </Link>
               </Button>
               <Button className="btn-secondary text-base py-6 px-8 flex items-center gap-2" asChild>
-                <Link to={user ? "/sponsorships" : "/auth?redirect=/sponsorships"}>
+                <Link to={user ? "/sponsorships" : "/sponsorships-info"}>
                   Discover Sponsorships <ArrowRight size={18} />
                 </Link>
               </Button>
