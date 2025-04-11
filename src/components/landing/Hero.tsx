@@ -14,11 +14,11 @@ const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">
             <h1 className="text-5xl font-bold leading-tight tracking-tight text-colink-navy">
-              Connect, Collaborate, and{" "}
-              <span className="text-colink-teal">Grow Together</span>
+              Simplify & Accelerate Community{" "}
+              <span className="text-colink-teal">Partnerships and Sponsorships</span>
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl">
-              CoLink Venture brings businesses together through powerful partnerships and sponsorships. Find the right connections to take your business to the next level.
+              CoLink Venture is an Innovative Platform Designed to Simplify and Accelerate Partnerships and Sponsorships in an Efficient Way to Access Mutually Beneficial Services and Resources.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button className="btn-primary text-base py-6 px-8 flex items-center gap-2" asChild>

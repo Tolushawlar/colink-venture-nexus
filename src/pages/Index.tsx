@@ -5,6 +5,7 @@ import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
 import BusinessSlider from "@/components/landing/BusinessSlider";
 import Footer from "@/components/landing/Footer";
+import BenefitSection from "@/components/landing/BenefitSection";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
@@ -47,6 +48,8 @@ const Index = () => {
       <Navbar />
       <main className="flex-1">
         <Hero />
+        
+        <BenefitSection />
         
         {/* Service Search Section */}
         <section className="bg-white py-16">

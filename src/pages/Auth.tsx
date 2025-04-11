@@ -1,10 +1,11 @@
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/contexts/AuthContext";
+import { ArrowLeft } from "lucide-react";
 
 import {
   Form,
@@ -87,6 +88,10 @@ const Auth = () => {
     <div className="container mx-auto flex min-h-[80vh] items-center justify-center py-12">
       <div className="mx-auto max-w-md w-full">
         <div className="mb-6 text-center">
+          <Link to="/" className="inline-flex items-center text-colink-blue hover:text-colink-blue/80 transition-colors mb-4">
+            <ArrowLeft className="mr-2" size={16} />
+            Back to Home
+          </Link>
           <img
             src="/lovable-uploads/b2f72189-44d3-499b-820d-4f1b98ea3cb7.png"
             alt="CoLink Venture"
