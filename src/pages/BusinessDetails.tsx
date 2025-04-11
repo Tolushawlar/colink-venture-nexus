@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -7,7 +6,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -27,51 +25,16 @@ import {
   MapPin,
   FileText,
   Share2,
-  Building,
-  Loader2
+  Building
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { format } from "date-fns";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/components/ui/use-toast";
 import { Business } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createAppointment } from "@/services/appointmentService";
 
 const mockBusinesses: Business[] = [
   {
     id: "1",
-    user_id: "user-tech-solutions", // Added user_id property
     name: "Tech Solutions Inc",
     description: "Enterprise software solutions provider specializing in AI and automation.",
     logo: "https://via.placeholder.com/150",
@@ -106,7 +69,6 @@ const mockBusinesses: Business[] = [
   },
   {
     id: "2",
-    user_id: "user-creative-studios", // Added user_id property
     name: "Creative Studios",
     description: "Creative design agency offering branding, web design, and digital marketing.",
     logo: "https://via.placeholder.com/150",
@@ -134,7 +96,6 @@ const mockBusinesses: Business[] = [
   },
   {
     id: "3",
-    user_id: "user-marketing-experts", // Added user_id property
     name: "Marketing Experts",
     description: "Full-service marketing agency with expertise in digital and traditional channels.",
     logo: "https://via.placeholder.com/150",
@@ -161,7 +122,6 @@ const mockBusinesses: Business[] = [
   },
   {
     id: "4",
-    user_id: "user-event-masters", // Added user_id property
     name: "Event Masters",
     description: "Professional event planning and management services for corporate clients.",
     logo: "https://via.placeholder.com/150",
@@ -189,100 +149,25 @@ const mockBusinesses: Business[] = [
   }
 ];
 
-// Form schema for appointment scheduling
-const appointmentSchema = z.object({
-  date: z.date({
-    required_error: "Please select a date.",
-  }),
-  time: z.string({
-    required_error: "Please select a time.",
-  }),
-  purpose: z.string().min(5, {
-    message: "Purpose must be at least 5 characters.",
-  }),
-  location: z.string().optional(),
-});
-
-type AppointmentFormValues = z.infer<typeof appointmentSchema>;
-
 const BusinessDetails = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
   const [business, setBusiness] = useState<Business | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAppointmentDialogOpen, setIsAppointmentDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
   const searchParams = new URLSearchParams(location.search);
   const platformType = searchParams.get('type') || 'partnership';
-
-  // Initialize form
-  const form = useForm<AppointmentFormValues>({
-    resolver: zodResolver(appointmentSchema),
-    defaultValues: {
-      date: new Date(),
-      time: "10:00",
-      purpose: "",
-      location: "Virtual Meeting",
-    },
-  });
   
   useEffect(() => {
-    const fetchBusiness = async () => {
-      setIsLoading(true);
-      
-      try {
-        if (id) {
-          // Try to fetch from the database first
-          const { data, error } = await supabase
-            .from("business_profiles")
-            .select("*")
-            .eq("id", id)
-            .single();
-          
-          if (error || !data) {
-            // If not found in database, use mock data
-            const mockBusiness = mockBusinesses.find(b => b.id === id);
-            
-            if (mockBusiness) {
-              setBusiness(mockBusiness);
-            } else {
-              toast({
-                variant: "destructive",
-                title: "Business Not Found",
-                description: "The business you're looking for could not be found.",
-              });
-              navigate('/partnerships');
-            }
-          } else {
-            // Business found in database
-            setBusiness(data as Business);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching business:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load business details.",
-        });
-      } finally {
-        setIsLoading(false);
+    if (id) {
+      const foundBusiness = mockBusinesses.find(b => b.id === id);
+      if (foundBusiness) {
+        setBusiness(foundBusiness);
       }
-    };
-    
-    fetchBusiness();
-  }, [id, navigate, toast]);
+    }
+  }, [id]);
   
   const handleContact = () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    
     toast({
       title: "Contact Request Sent",
       description: `Your contact request has been sent to ${business?.name}.`,
@@ -290,11 +175,6 @@ const BusinessDetails = () => {
   };
   
   const handleChat = () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    
     navigate('/chats');
     
     toast({
@@ -304,67 +184,19 @@ const BusinessDetails = () => {
   };
   
   const handleScheduleAppointment = () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
+    navigate('/appointments');
     
-    setIsAppointmentDialogOpen(true);
+    toast({
+      title: "Appointment Scheduled",
+      description: `Your appointment with ${business?.name} has been scheduled.`,
+    });
   };
-  
-  const onSubmitAppointment = async (values: AppointmentFormValues) => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    
-    try {
-      setIsSubmitting(true);
-      
-      // Create the appointment
-      await createAppointment({
-        userId: business?.user_id || "",
-        businessId: business?.id,
-        date: format(values.date, "yyyy-MM-dd"),
-        time: values.time,
-        purpose: values.purpose,
-        location: values.location
-      });
-      
-      toast({
-        title: "Appointment Scheduled",
-        description: `Your appointment with ${business?.name} has been scheduled for ${format(values.date, "PPP")} at ${values.time}.`,
-      });
-      
-      setIsAppointmentDialogOpen(false);
-      form.reset();
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error Scheduling Appointment",
-        description: error.message || "Failed to schedule appointment. Please try again.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
-  if (isLoading) {
-    return (
-      <DashboardLayout>
-        <div className="flex flex-col items-center justify-center h-64">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="mt-4 text-lg">Loading business details...</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
   
   if (!business) {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center h-64">
-          <p className="text-xl text-muted-foreground">Business not found</p>
+          <p>Loading business details...</p>
         </div>
       </DashboardLayout>
     );
@@ -637,149 +469,6 @@ const BusinessDetails = () => {
           </TabsContent>
         </Tabs>
       </div>
-      
-      {/* Appointment Scheduling Dialog */}
-      <Dialog open={isAppointmentDialogOpen} onOpenChange={setIsAppointmentDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Schedule an Appointment</DialogTitle>
-            <DialogDescription>
-              Set up a meeting with {business.name}. You'll receive a confirmation once they accept.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmitAppointment)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className="pl-3 text-left font-normal"
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <Calendar className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="time"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Time</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a time" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="09:00">9:00 AM</SelectItem>
-                        <SelectItem value="10:00">10:00 AM</SelectItem>
-                        <SelectItem value="11:00">11:00 AM</SelectItem>
-                        <SelectItem value="12:00">12:00 PM</SelectItem>
-                        <SelectItem value="13:00">1:00 PM</SelectItem>
-                        <SelectItem value="14:00">2:00 PM</SelectItem>
-                        <SelectItem value="15:00">3:00 PM</SelectItem>
-                        <SelectItem value="16:00">4:00 PM</SelectItem>
-                        <SelectItem value="17:00">5:00 PM</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="purpose"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Purpose</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Briefly describe the purpose of this meeting"
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Location (Optional)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Virtual meeting or physical address"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsAppointmentDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Scheduling...
-                    </>
-                  ) : (
-                    'Schedule Appointment'
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
     </DashboardLayout>
   );
 };

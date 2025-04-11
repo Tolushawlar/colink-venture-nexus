@@ -1,258 +1,296 @@
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { NavItem } from "@/types";
+import { Menu, X, ChevronDown, User, LogOut, Settings, Edit } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
+
+const mainNavItems: NavItem[] = [
+  {
+    title: "Home",
+    href: "/",
+  },
+  {
+    title: "About Us",
+    href: "/about-us",
+  },
+  {
+    title: "Solutions",
+    href: "#solutions",
+  },
+  {
+    title: "Pricing",
+    href: "/pricing",
+  },
+  {
+    title: "Contact",
+    href: "/contact-us",
+  },
+];
+
+const platformNavItems: NavItem[] = [
+  {
+    title: "Partnerships",
+    href: "/partnerships-info",
+    description: "Connect with businesses for strategic partnerships",
+  },
+  {
+    title: "Sponsorships",
+    href: "/sponsorships-info",
+    description: "Find sponsors for your initiatives and events",
+  },
+];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
-  
+  const navigate = useNavigate();
+
   const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
+    await signOut();
+  };
+  
+  const handleNavigateToAuth = () => {
+    navigate("/auth");
+    setIsOpen(false);
   };
 
+  const getUserInitials = () => {
+    if (!user) return "?";
+    const email = user.email || "";
+    return email.charAt(0).toUpperCase();
+  };
+
+  const navigateToDashboard = () => {
+    const accountType = user?.user_metadata?.accountType;
+    if (accountType === 'partnership') {
+      navigate('/partnerships');
+    } else if (accountType === 'sponsorship') {
+      navigate('/sponsorships');
+    } else {
+      navigate('/onboarding');
+    }
+    setIsOpen(false);
+  };
+
+  const navigateToProfile = () => {
+    navigate('/profile');
+    setIsOpen(false);
+  };
+
+  const isAdmin = user?.email === "admin@colink.com" || user?.user_metadata?.role === "admin";
+
   return (
-    <header className="sticky top-0 z-40 w-full bg-white border-b border-gray-100">
-      <nav className="container-wide flex h-16 items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-colink-navy">
-            CoLink<span className="text-colink-teal">Venture</span>
-          </span>
-        </Link>
-        
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-6">
-          <Link to="/" className="text-sm font-medium hover:text-colink-teal">Home</Link>
-          
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="text-sm font-medium hover:text-colink-teal bg-transparent">
-                  Solutions
-                </NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
-                    <li className="row-span-3">
-                      <NavigationMenuLink asChild>
-                        <Link
-                          className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-colink-teal/50 to-colink-blue/50 p-6 no-underline outline-none focus:shadow-md"
-                          to="/"
-                        >
-                          <div className="mt-4 mb-2 text-lg font-medium text-colink-navy">
-                            CoLink Venture
-                          </div>
-                          <p className="text-sm leading-tight text-colink-navy/90">
-                            Connect your business with the perfect partners and sponsors.
-                          </p>
-                        </Link>
-                      </NavigationMenuLink>
-                    </li>
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <Link
-                          to="/partnerships-info"
-                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-slate-100 focus:bg-slate-100"
-                        >
-                          <div className="text-sm font-medium leading-none text-colink-navy">
-                            Partnerships
-                          </div>
-                          <p className="line-clamp-2 text-sm leading-snug text-slate-500">
-                            Connect with compatible businesses for strategic growth.
-                          </p>
-                        </Link>
-                      </NavigationMenuLink>
-                    </li>
-                    <li>
-                      <NavigationMenuLink asChild>
-                        <Link
-                          to="/sponsorships-info"
-                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-slate-100 focus:bg-slate-100"
-                        >
-                          <div className="text-sm font-medium leading-none text-colink-navy">
-                            Sponsorships
-                          </div>
-                          <p className="line-clamp-2 text-sm leading-snug text-slate-500">
-                            Find sponsors for your events or sponsorship opportunities.
-                          </p>
-                        </Link>
-                      </NavigationMenuLink>
-                    </li>
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-          
-          <Link to="/contact" className="text-sm font-medium hover:text-colink-teal">Contact</Link>
-        </div>
-        
-        {/* Auth Buttons - Desktop */}
-        <div className="hidden md:flex items-center gap-4">
-          {user ? (
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" asChild>
-                <Link to={user.user_metadata?.accountType === "sponsorship" ? "/sponsorships" : "/partnerships"}>
-                  Dashboard
+    <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
+      <div className="container-wide flex h-16 items-center justify-between">
+        <div className="flex items-center gap-6">
+          <Link to="/" className="flex items-center space-x-2">
+            <img 
+              src="/lovable-uploads/b2f72189-44d3-499b-820d-4f1b98ea3cb7.png" 
+              alt="CoLink Venture" 
+              className="h-8" 
+            />
+          </Link>
+          <nav className="hidden md:flex items-center gap-6">
+            {mainNavItems.map((item, index) => (
+              item.href.startsWith("#") ? (
+                <a
+                  key={index}
+                  href={item.href}
+                  className="text-sm font-medium text-gray-600 hover:text-colink-teal transition-colors"
+                >
+                  {item.title}
+                </a>
+              ) : (
+                <Link
+                  key={index}
+                  to={item.href}
+                  className="text-sm font-medium text-gray-600 hover:text-colink-teal transition-colors"
+                >
+                  {item.title}
                 </Link>
-              </Button>
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user.user_metadata?.avatarUrl} />
-                <AvatarFallback>
-                  {user.user_metadata?.displayName?.substring(0, 2) || user.email?.substring(0, 2) || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <Button variant="outline" onClick={handleSignOut}>
-                Sign Out
-              </Button>
-            </div>
+              )
+            ))}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-1 text-gray-600 hover:text-colink-teal">
+                  Platforms <ChevronDown size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[240px]">
+                {platformNavItems.map((item, index) => (
+                  <DropdownMenuItem key={index} asChild>
+                    <Link to={item.href} className="p-2 cursor-pointer">
+                      <div>
+                        <div className="text-sm font-medium">{item.title}</div>
+                        <div className="text-xs text-muted-foreground">{item.description}</div>
+                      </div>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </nav>
+        </div>
+
+        <div className="hidden md:flex items-center gap-2">
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email || ""} />
+                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <User size={16} />
+                  <span>{user.email}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2" onClick={navigateToDashboard}>
+                  <User size={16} />
+                  <span>My Dashboard</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2" onClick={navigateToProfile}>
+                  <Edit size={16} />
+                  <span>Edit Profile</span>
+                </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin-dashboard" className="flex items-center gap-2">
+                      <Settings size={16} />
+                      <span>Admin Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="flex items-center gap-2 text-red-500" onClick={handleSignOut}>
+                  <LogOut size={16} />
+                  <span>Log Out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" asChild>
-                <Link to="/auth">Sign In</Link>
-              </Button>
-              <Button asChild>
-                <Link to="/auth?action=signup">Sign Up</Link>
-              </Button>
+              <Button variant="outline" className="border-colink-navy text-colink-navy hover:bg-colink-navy/10" onClick={() => navigate("/auth")}>Log In</Button>
+              <Button className="bg-colink-navy hover:bg-colink-navy/90 text-white" onClick={() => navigate("/auth?tab=signup")}>Sign Up</Button>
             </>
           )}
         </div>
-        
-        {/* Mobile Menu Trigger */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-[280px] sm:w-[350px]">
-            <SheetHeader className="text-left">
-              <SheetTitle className="text-2xl font-bold text-colink-navy">
-                CoLink<span className="text-colink-teal">Venture</span>
-              </SheetTitle>
-              <SheetDescription>
-                Connect, Partner, and Grow
-              </SheetDescription>
-            </SheetHeader>
-            <div className="mt-6 space-y-1">
-              {user && (
-                <div className="flex items-center mb-6 p-2 bg-gray-50 rounded-md">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.user_metadata?.avatarUrl} />
-                    <AvatarFallback>
-                      {user.user_metadata?.displayName?.substring(0, 2) || user.email?.substring(0, 2) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium">
-                      {user.user_metadata?.displayName || user.email?.split('@')[0]}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {user.email}
-                    </p>
+
+        <div className="md:hidden">
+          <Button
+            variant="ghost"
+            className="p-2"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle Menu"
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </Button>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="container md:hidden py-4">
+          <nav className="flex flex-col gap-4">
+            {mainNavItems.map((item, index) => (
+              item.href.startsWith("#") ? (
+                <a
+                  key={index}
+                  href={item.href}
+                  className="text-base font-medium hover:text-colink-teal transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.title}
+                </a>
+              ) : (
+                <Link
+                  key={index}
+                  to={item.href}
+                  className="text-base font-medium hover:text-colink-teal transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.title}
+                </Link>
+              )
+            ))}
+            <div className="py-2">
+              <p className="text-sm font-medium text-gray-500 mb-2">Platforms</p>
+              {platformNavItems.map((item, index) => (
+                <Link
+                  key={index}
+                  to={item.href}
+                  className="block py-2 text-base font-medium hover:text-colink-teal"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.title}
+                </Link>
+              ))}
+            </div>
+            <div className="flex flex-col gap-2 pt-4">
+              {user ? (
+                <>
+                  <div className="flex items-center gap-2 py-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email || ""} />
+                      <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium">{user.email}</span>
                   </div>
-                </div>
-              )}
-              <SheetClose asChild>
-                <Link 
-                  to="/"
-                  className="flex w-full items-center py-2 text-lg font-medium"
-                >
-                  Home
-                </Link>
-              </SheetClose>
-              <SheetClose asChild>
-                <Link 
-                  to="/partnerships-info"
-                  className="flex w-full items-center py-2 text-lg font-medium"
-                >
-                  Partnerships
-                </Link>
-              </SheetClose>
-              <SheetClose asChild>
-                <Link 
-                  to="/sponsorships-info"
-                  className="flex w-full items-center py-2 text-lg font-medium"
-                >
-                  Sponsorships
-                </Link>
-              </SheetClose>
-              <SheetClose asChild>
-                <Link 
-                  to="/contact"
-                  className="flex w-full items-center py-2 text-lg font-medium"
-                >
-                  Contact
-                </Link>
-              </SheetClose>
-              
-              {user && (
-                <SheetClose asChild>
-                  <Link 
-                    to={user.user_metadata?.accountType === "sponsorship" ? "/sponsorships" : "/partnerships"}
-                    className="flex w-full items-center py-2 text-lg font-medium text-colink-teal"
+                  {isAdmin && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full flex items-center justify-center gap-2"
+                      onClick={() => {
+                        navigate("/admin-dashboard");
+                        setIsOpen(false);
+                      }}
+                    >
+                      <Settings size={16} />
+                      Admin Dashboard
+                    </Button>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    className="w-full flex items-center justify-center gap-2"
+                    onClick={handleSignOut}
                   >
-                    <LayoutDashboard className="mr-2 h-5 w-5" />
-                    Dashboard
-                  </Link>
-                </SheetClose>
+                    <LogOut size={16} />
+                    Log Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    className="border-colink-navy text-colink-navy hover:bg-colink-navy/10 w-full"
+                    onClick={handleNavigateToAuth}
+                  >
+                    Log In
+                  </Button>
+                  <Button 
+                    className="bg-colink-navy hover:bg-colink-navy/90 text-white w-full"
+                    onClick={handleNavigateToAuth}
+                  >
+                    Sign Up
+                  </Button>
+                </>
               )}
             </div>
-            <SheetFooter className="mt-auto pt-4">
-              {user ? (
-                <Button 
-                  className="w-full" 
-                  variant="outline" 
-                  onClick={handleSignOut}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </Button>
-              ) : (
-                <div className="flex flex-col gap-2 w-full">
-                  <SheetClose asChild>
-                    <Button className="w-full" asChild>
-                      <Link to="/auth?action=signup">Sign Up</Link>
-                    </Button>
-                  </SheetClose>
-                  <SheetClose asChild>
-                    <Button className="w-full" variant="outline" asChild>
-                      <Link to="/auth">Sign In</Link>
-                    </Button>
-                  </SheetClose>
-                </div>
-              )}
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
-      </nav>
+          </nav>
+        </div>
+      )}
     </header>
   );
 };

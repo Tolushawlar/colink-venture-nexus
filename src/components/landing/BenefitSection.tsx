@@ -1,26 +1,21 @@
 
 import React from "react";
+import { User, Building, Users, Briefcase } from "lucide-react";
 
 interface BenefitBoxProps {
   title: string;
   description: string;
-  imageSrc: string;
+  icon: React.ReactNode;
 }
 
-const BenefitBox = ({ title, description, imageSrc }: BenefitBoxProps) => {
+const BenefitBox = ({ title, description, icon }: BenefitBoxProps) => {
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
-      <div className="h-48 overflow-hidden">
-        <img 
-          src={imageSrc} 
-          alt={title} 
-          className="w-full h-full object-cover transition-transform hover:scale-105"
-        />
+    <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 flex flex-col items-center text-center">
+      <div className="w-16 h-16 rounded-full bg-colink-blue/10 flex items-center justify-center mb-4">
+        {icon}
       </div>
-      <div className="p-6">
-        <h3 className="text-xl font-semibold text-colink-navy mb-2">{title}</h3>
-        <p className="text-gray-600">{description}</p>
-      </div>
+      <h3 className="text-xl font-semibold text-colink-navy mb-2">{title}</h3>
+      <p className="text-gray-600">{description}</p>
     </div>
   );
 };
@@ -30,22 +25,22 @@ const BenefitSection = () => {
     {
       title: "Individuals",
       description: "Find opportunities to connect with organizations that share your values and interests.",
-      imageSrc: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80"
+      icon: <User size={32} className="text-colink-blue" />
     },
     {
       title: "Organizations",
       description: "Connect with partners and sponsors to expand your reach and impact.",
-      imageSrc: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80"
+      icon: <Building size={32} className="text-colink-purple" />
     },
     {
       title: "Communities",
       description: "Strengthen local connections and build a more vibrant community ecosystem.",
-      imageSrc: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80"
+      icon: <Users size={32} className="text-colink-teal" />
     },
     {
       title: "Businesses",
       description: "Discover partnership opportunities to grow your business and reach new audiences.",
-      imageSrc: "https://images.unsplash.com/photo-1556761175-5b46a572b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80"
+      icon: <Briefcase size={32} className="text-colink-navy" />
     }
   ];
 
@@ -71,7 +66,7 @@ const BenefitSection = () => {
                 key={index} 
                 title={benefit.title} 
                 description={benefit.description} 
-                imageSrc={benefit.imageSrc} 
+                icon={benefit.icon} 
               />
             ))}
           </div>

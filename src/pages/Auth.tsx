@@ -1,3 +1,7 @@
+
+// Since we don't have access to the full Auth.tsx file in the current code state,
+// we'll need to create a new component that adds a Back to Home link
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
