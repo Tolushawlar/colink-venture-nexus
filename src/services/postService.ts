@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { Post } from "@/types";
+import { Post } from "@/types"; // Make sure we import Post from types
 
 // Get all posts
 export const getPosts = async (): Promise<Post[]> => {
@@ -19,7 +19,7 @@ export const getPosts = async (): Promise<Post[]> => {
       userId: post.user_id,
       title: post.title,
       content: post.content,
-      type: post.type as "service" | "announcement" | "update",
+      type: post.type as "service" | "announcement" | "update", // Cast to ensure type safety
       createdAt: post.created_at,
       updatedAt: post.updated_at,
       likes: Math.floor(Math.random() * 50), // Will be replaced with actual counts

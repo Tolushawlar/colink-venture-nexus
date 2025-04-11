@@ -39,9 +39,9 @@ import {
   getPostsByUser, 
   createPost, 
   deletePost, 
-  likePost, 
-  Post 
+  likePost 
 } from "@/services/postService";
+import { Post } from "@/types"; // Import Post type from types, not from postService
 import {
   Dialog,
   DialogContent,
