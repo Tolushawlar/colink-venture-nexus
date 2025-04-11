@@ -13,6 +13,15 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
 
@@ -41,8 +50,66 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6">
           <Link to="/" className="text-sm font-medium hover:text-colink-teal">Home</Link>
-          <Link to="/partnerships-info" className="text-sm font-medium hover:text-colink-teal">Partnerships</Link>
-          <Link to="/sponsorships-info" className="text-sm font-medium hover:text-colink-teal">Sponsorships</Link>
+          
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className="text-sm font-medium hover:text-colink-teal bg-transparent">
+                  Solutions
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-2">
+                    <li className="row-span-3">
+                      <NavigationMenuLink asChild>
+                        <Link
+                          className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-colink-teal/50 to-colink-blue/50 p-6 no-underline outline-none focus:shadow-md"
+                          to="/"
+                        >
+                          <div className="mt-4 mb-2 text-lg font-medium text-colink-navy">
+                            CoLink Venture
+                          </div>
+                          <p className="text-sm leading-tight text-colink-navy/90">
+                            Connect your business with the perfect partners and sponsors.
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          to="/partnerships-info"
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-slate-100 focus:bg-slate-100"
+                        >
+                          <div className="text-sm font-medium leading-none text-colink-navy">
+                            Partnerships
+                          </div>
+                          <p className="line-clamp-2 text-sm leading-snug text-slate-500">
+                            Connect with compatible businesses for strategic growth.
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                    <li>
+                      <NavigationMenuLink asChild>
+                        <Link
+                          to="/sponsorships-info"
+                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-slate-100 focus:bg-slate-100"
+                        >
+                          <div className="text-sm font-medium leading-none text-colink-navy">
+                            Sponsorships
+                          </div>
+                          <p className="line-clamp-2 text-sm leading-snug text-slate-500">
+                            Find sponsors for your events or sponsorship opportunities.
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                    </li>
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
+          
           <Link to="/contact" className="text-sm font-medium hover:text-colink-teal">Contact</Link>
         </div>
         
