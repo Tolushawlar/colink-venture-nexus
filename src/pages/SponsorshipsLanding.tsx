@@ -4,7 +4,7 @@ import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Football, Music, Heart, Palette } from "lucide-react";
+import { Dumbbell, Music, Heart, Palette } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface SponsorshipOptionProps {
@@ -57,7 +57,7 @@ const SponsorshipsLanding = () => {
       number: "i",
       title: "Sports Sponsorship",
       description: "Sponsoring sports events, teams, or athletes. Opportunities for exclusive VIP experience. Tap into the passion, dedication and enthusiasm of the loyal sports fan base with giveaways and merch. Find ideal sponsors for events and offer exclusive VIP experiences, enhancing sporting events with audience engagement and merchandise.",
-      icon: <Football className="h-6 w-6" />,
+      icon: <Dumbbell className="h-6 w-6" />,
       imageSrc: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80",
       alt: "Sports event with crowd",
     },
