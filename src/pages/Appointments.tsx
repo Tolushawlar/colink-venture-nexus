@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,53 +13,69 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Clock, MapPin, Check, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-
-// Mock appointments data
-const mockAppointments = [
-  {
-    id: "1",
-    businessId: "2",
-    businessName: "Creative Studios",
-    businessLogo: "https://via.placeholder.com/150",
-    date: "2025-04-15",
-    time: "10:00 AM",
-    location: "Online Meeting",
-    status: "upcoming",
-    purpose: "Brand Collaboration Discussion"
-  },
-  {
-    id: "2",
-    businessId: "3",
-    businessName: "Marketing Experts",
-    businessLogo: "https://via.placeholder.com/150",
-    date: "2025-04-20",
-    time: "2:00 PM",
-    location: "Their Office",
-    status: "upcoming",
-    purpose: "Co-marketing Campaign Planning"
-  },
-  {
-    id: "3",
-    businessId: "1",
-    businessName: "Tech Solutions Inc",
-    businessLogo: "https://via.placeholder.com/150",
-    date: "2025-04-05",
-    time: "11:30 AM",
-    location: "Our Office",
-    status: "completed",
-    purpose: "API Integration Meeting"
-  },
-];
+import { getAppointments, updateAppointmentStatus, subscribeToAppointments } from "@/services/supabaseService";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Appointments = () => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleCancelAppointment = (appointmentId: string, businessName: string) => {
-    // In a real app, you would call an API to cancel the appointment
-    toast({
-      title: "Appointment Cancelled",
-      description: `Your appointment with ${businessName} has been cancelled.`,
-    });
+  useEffect(() => {
+    if (user) {
+      fetchAppointments();
+      
+      // Subscribe to real-time updates
+      const unsubscribe = subscribeToAppointments(user.id, (appointment) => {
+        setAppointments(prev => {
+          const existingIndex = prev.findIndex(a => a.id === appointment.id);
+          if (existingIndex >= 0) {
+            // Update existing appointment
+            const updated = [...prev];
+            updated[existingIndex] = { ...updated[existingIndex], ...appointment };
+            return updated;
+          } else {
+            // Add new appointment
+            return [...prev, appointment];
+          }
+        });
+        
+        // Show toast for new appointment
+        toast({
+          title: "Appointment Updated",
+          description: "An appointment has been updated.",
+        });
+      });
+      
+      return () => {
+        unsubscribe();
+      };
+    }
+  }, [user]);
+
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      const data = await getAppointments();
+      setAppointments(data || []);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelAppointment = async (appointmentId: string, businessName: string) => {
+    try {
+      await updateAppointmentStatus(appointmentId, "cancelled");
+      toast({
+        title: "Appointment Cancelled",
+        description: `Your appointment with ${businessName} has been cancelled.`,
+      });
+    } catch (error) {
+      console.error("Error cancelling appointment:", error);
+    }
   };
 
   const handleRescheduleAppointment = (appointmentId: string, businessName: string) => {
@@ -70,8 +86,39 @@ const Appointments = () => {
     });
   };
 
-  const upcomingAppointments = mockAppointments.filter(appointment => appointment.status === "upcoming");
-  const pastAppointments = mockAppointments.filter(appointment => appointment.status === "completed");
+  const upcomingAppointments = appointments.filter(appointment => 
+    appointment.status === "pending" || appointment.status === "confirmed"
+  );
+  
+  const pastAppointments = appointments.filter(appointment => 
+    appointment.status === "completed" || appointment.status === "cancelled"
+  );
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-colink-teal"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const getBusinessName = (appointment: any) => {
+    if (user?.id === appointment.requester_id) {
+      return appointment.recipient_business?.name || 'Business';
+    } else {
+      return appointment.requester_business?.name || 'Business';
+    }
+  };
+
+  const getBusinessLogo = (appointment: any) => {
+    if (user?.id === appointment.requester_id) {
+      return appointment.recipient_business?.logo || '';
+    } else {
+      return appointment.requester_business?.logo || '';
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -94,12 +141,12 @@ const Appointments = () => {
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
                         <div>
-                          <CardTitle>{appointment.businessName}</CardTitle>
+                          <CardTitle>{getBusinessName(appointment)}</CardTitle>
                           <CardDescription>{appointment.purpose}</CardDescription>
                         </div>
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={appointment.businessLogo} />
-                          <AvatarFallback>{appointment.businessName.substring(0, 2)}</AvatarFallback>
+                          <AvatarImage src={getBusinessLogo(appointment)} />
+                          <AvatarFallback>{getBusinessName(appointment).substring(0, 2)}</AvatarFallback>
                         </Avatar>
                       </div>
                     </CardHeader>
@@ -107,7 +154,7 @@ const Appointments = () => {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span>{appointment.date}</span>
+                          <span>{new Date(appointment.date).toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Clock className="h-4 w-4 text-muted-foreground" />
@@ -115,7 +162,7 @@ const Appointments = () => {
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span>{appointment.location}</span>
+                          <span>{appointment.location || "No location specified"}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -123,14 +170,14 @@ const Appointments = () => {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => handleCancelAppointment(appointment.id, appointment.businessName)}
+                        onClick={() => handleCancelAppointment(appointment.id, getBusinessName(appointment))}
                       >
                         <X className="mr-2 h-4 w-4" />
                         Cancel
                       </Button>
                       <Button 
                         size="sm"
-                        onClick={() => handleRescheduleAppointment(appointment.id, appointment.businessName)}
+                        onClick={() => handleRescheduleAppointment(appointment.id, getBusinessName(appointment))}
                       >
                         <Calendar className="mr-2 h-4 w-4" />
                         Reschedule
@@ -157,12 +204,12 @@ const Appointments = () => {
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
                         <div>
-                          <CardTitle>{appointment.businessName}</CardTitle>
+                          <CardTitle>{getBusinessName(appointment)}</CardTitle>
                           <CardDescription>{appointment.purpose}</CardDescription>
                         </div>
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={appointment.businessLogo} />
-                          <AvatarFallback>{appointment.businessName.substring(0, 2)}</AvatarFallback>
+                          <AvatarImage src={getBusinessLogo(appointment)} />
+                          <AvatarFallback>{getBusinessName(appointment).substring(0, 2)}</AvatarFallback>
                         </Avatar>
                       </div>
                     </CardHeader>
@@ -170,7 +217,7 @@ const Appointments = () => {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span>{appointment.date}</span>
+                          <span>{new Date(appointment.date).toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Clock className="h-4 w-4 text-muted-foreground" />
@@ -178,7 +225,7 @@ const Appointments = () => {
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span>{appointment.location}</span>
+                          <span>{appointment.location || "No location specified"}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -188,8 +235,17 @@ const Appointments = () => {
                         className="w-full"
                         variant="outline"
                       >
-                        <Check className="mr-2 h-4 w-4" />
-                        Completed
+                        {appointment.status === "completed" ? (
+                          <>
+                            <Check className="mr-2 h-4 w-4" />
+                            Completed
+                          </>
+                        ) : (
+                          <>
+                            <X className="mr-2 h-4 w-4" />
+                            Cancelled
+                          </>
+                        )}
                       </Button>
                     </CardFooter>
                   </Card>
