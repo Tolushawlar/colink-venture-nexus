@@ -3,6 +3,7 @@ export type AccountType = "partnership" | "sponsorship";
 
 export type Business = {
   id: string;
+  user_id: string; // Added user_id property
   name: string;
   description: string;
   logo: string;
@@ -67,6 +68,15 @@ export type Post = {
   updatedAt: string;
   likes: number;
   comments: number;
+  // Add additional fields to match Supabase response
+  user_id?: string;
+  created_at?: string;
+  updated_at?: string;
+  image_url?: string | null;
+  business_id?: string | null;
+  user_info?: any;
+  business_name?: string;
+  business_profiles?: any;
 };
 
 // Add missing type definitions

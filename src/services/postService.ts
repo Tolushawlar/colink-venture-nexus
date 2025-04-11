@@ -1,46 +1,10 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-
-export type Post = {
-  id: string;
-  title: string;
-  content: string;
-  type: "service" | "announcement" | "update";
-  user_id: string;
-  business_id?: string;
-  created_at: string;
-  updated_at: string;
-  image_url?: string;
-  user_info?: {
-    email?: string;
-    user_metadata?: {
-      displayName?: string;
-      avatarUrl?: string;
-    }
-  };
-  business_name?: string;
-  likes?: number;
-  comments?: number;
-};
-
-export type Comment = {
-  id: string;
-  post_id: string;
-  user_id: string;
-  content: string;
-  created_at: string;
-  user_info?: {
-    email?: string;
-    user_metadata?: {
-      displayName?: string;
-      avatarUrl?: string;
-    }
-  };
-};
+import { Post } from "@/types";
 
 // Get all posts
-export const getPosts = async () => {
+export const getPosts = async (): Promise<Post[]> => {
   try {
     const { data: posts, error } = await supabase
       .from("posts")
@@ -50,13 +14,25 @@ export const getPosts = async () => {
     if (error) throw error;
     
     // Transform the response to match our Post type
-    const transformedPosts = posts.map(post => ({
-      ...post,
-      user_info: post.user,
-      business_name: post.business_profiles?.name,
-      // Placeholder values for likes/comments
+    const transformedPosts: Post[] = posts.map(post => ({
+      id: post.id,
+      userId: post.user_id,
+      title: post.title,
+      content: post.content,
+      type: post.type as "service" | "announcement" | "update",
+      createdAt: post.created_at,
+      updatedAt: post.updated_at,
       likes: Math.floor(Math.random() * 50), // Will be replaced with actual counts
       comments: Math.floor(Math.random() * 10), // Will be replaced with actual counts
+      // Additional properties from Supabase
+      user_id: post.user_id,
+      business_id: post.business_id,
+      created_at: post.created_at,
+      updated_at: post.updated_at,
+      image_url: post.image_url,
+      user_info: post.user,
+      business_name: post.business_profiles?.name,
+      business_profiles: post.business_profiles
     }));
     
     return transformedPosts;
@@ -67,7 +43,7 @@ export const getPosts = async () => {
 };
 
 // Get posts by user ID
-export const getPostsByUser = async (userId: string) => {
+export const getPostsByUser = async (userId: string): Promise<Post[]> => {
   try {
     const { data: posts, error } = await supabase
       .from("posts")
@@ -78,13 +54,25 @@ export const getPostsByUser = async (userId: string) => {
     if (error) throw error;
     
     // Transform the response to match our Post type
-    const transformedPosts = posts.map(post => ({
-      ...post,
-      user_info: post.user,
-      business_name: post.business_profiles?.name,
-      // Placeholder values for likes/comments
+    const transformedPosts: Post[] = posts.map(post => ({
+      id: post.id,
+      userId: post.user_id,
+      title: post.title,
+      content: post.content,
+      type: post.type as "service" | "announcement" | "update",
+      createdAt: post.created_at,
+      updatedAt: post.updated_at,
       likes: Math.floor(Math.random() * 50),
       comments: Math.floor(Math.random() * 10),
+      // Additional properties from Supabase
+      user_id: post.user_id,
+      business_id: post.business_id,
+      created_at: post.created_at,
+      updated_at: post.updated_at,
+      image_url: post.image_url,
+      user_info: post.user,
+      business_name: post.business_profiles?.name,
+      business_profiles: post.business_profiles
     }));
     
     return transformedPosts;
@@ -103,7 +91,7 @@ export const createPost = async (postData: Partial<Post>) => {
         title: postData.title,
         content: postData.content,
         type: postData.type,
-        user_id: postData.user_id,
+        user_id: postData.user_id || postData.userId,
         business_id: postData.business_id,
         image_url: postData.image_url
       })
