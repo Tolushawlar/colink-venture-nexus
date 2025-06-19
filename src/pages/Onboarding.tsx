@@ -1,4 +1,4 @@
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { AccountType } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Upload, X } from "lucide-react";
+import { Camera, Upload, X, Loader2 } from "lucide-react";
+import axios from "axios";
 
 const formSchema = z.object({
   accountType: z.enum(["partnership", "sponsorship"] as const),
@@ -75,7 +76,9 @@ const Onboarding = () => {
   const { toast } = useToast();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
-  
+  const [isUploading, setIsUploading] = useState(false);
+  const [isGalleryUploading, setIsGalleryUploading] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -93,9 +96,16 @@ const Onboarding = () => {
       address: "",
     },
   });
-  
+
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log("Form submitted with values:", values);
     try {
+      // Show loading toast
+      toast({
+        title: "Setting up your profile",
+        description: "Please wait while we set up your account...",
+      });
+
       // Update user profile with the form values
       await updateUserProfile({
         accountType: values.accountType,
@@ -113,58 +123,178 @@ const Onboarding = () => {
         avatarUrl: profileImage,
         galleryImages: galleryImages
       });
-      
-      // Navigate to the appropriate dashboard based on account type
-      if (values.accountType === "partnership") {
-        navigate("/partnerships");
-      } else {
-        navigate("/sponsorships");
+
+      // Map form values to business API payload
+      const businessPayload = {
+        name: values.businessName || values.displayName,
+        description: values.businessDescription || values.bio,
+        logo: profileImage  || "", // Use the uploaded profile image as the logo
+        industry: values.industry,
+        // Split and trim services/interests if they are comma-separated strings
+        partnershipOffers: values.services?.split(',').map(s => s.trim()).filter(Boolean),
+        sponsorshipOffers: values.interests?.split(',').map(s => s.trim()).filter(Boolean),
+        website: values.website,
+        email: values.email,
+        phone: values.phone,
+        location: values.address,
+        gallery: galleryImages // Use the uploaded gallery images
+      };
+
+      try {
+        // Call business API to create a new business entry
+        const response = await fetch('http://localhost:3000/api/businesses', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+          },
+          body: JSON.stringify(businessPayload)
+        });
+
+        if (!response.ok) {
+          // If the response is not OK, throw an error with the status
+          const errorData = await response.json();
+          console.warn("Business API error:", errorData);
+          // Continue with navigation even if business API fails
+        } else {
+          // Optionally, handle success response from the business API
+          const businessData = await response.json();
+          console.log('Business profile created:', businessData);
+        }
+      } catch (apiError) {
+        console.warn("Business API error:", apiError);
+        // Continue with navigation even if business API fails
       }
+
+      // Success toast
+      toast({
+        title: "Profile setup complete!",
+        description: "Your profile has been created successfully.",
+      });
+
+      // Store account type in sessionStorage (without quotes)
+      sessionStorage.setItem('accountType', values.accountType);
+      console.log('Setting accountType in sessionStorage:', values.accountType);
+      
+      // Remove onboarded flag from sessionStorage
+      sessionStorage.removeItem('onboarded');
+      console.log('Removed onboarded flag from sessionStorage');
+      
+      // Navigate to the appropriate dashboard based on account type after successful API call
+      const accountType = values.accountType;
+      console.log(`Navigating to /${accountType}s dashboard after onboarding`);
+      navigate(`/${accountType}s`);
+
     } catch (error) {
-      console.error("Error saving profile:", error);
+      console.error("Error setting up profile:", error);
       toast({
         title: "Error",
-        description: "There was a problem setting up your profile",
+        description: error instanceof Error ? error.message : "There was a problem setting up your profile",
         variant: "destructive",
       });
     }
   };
-  
+
   const nextStep = () => {
     setStep(step + 1);
   };
-  
+
   const prevStep = () => {
     setStep(step - 1);
   };
-  
-  const handleProfileImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleProfileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // For now, just create a local URL for the image
-      // In a real app, you would upload this to storage
-      const imageUrl = URL.createObjectURL(file);
+    if (!file) return;
+    
+    setIsUploading(true);
+    
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+      // Upload image to Cloudinary via backend
+      const response = await axios.post('http://localhost:3000/api/uploads', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+      
+      const imageUrl = response.data.data.imageUrl;
+      console.log("Image uploaded successfully:", imageUrl);
       setProfileImage(imageUrl);
+      
+      toast({
+        title: "Image uploaded", 
+        description: "Your profile picture has been updated.",
+      });
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: error.response?.data?.message || "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
-  
-  const handleGalleryImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleGalleryImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (files) {
-      const newImages = Array.from(files).map(file => URL.createObjectURL(file));
-      setGalleryImages([...galleryImages, ...newImages]);
+    if (!files || files.length === 0) return;
+    
+    setIsGalleryUploading(true);
+    
+    try {
+      const uploadedUrls: string[] = [];
+      
+      // Upload each image to Cloudinary
+      for (const file of Array.from(files)) {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const response = await axios.post('http://localhost:3000/api/uploads', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+          }
+        });
+        
+        const imageUrl = response.data.data.imageUrl;
+        console.log(imageUrl);
+        uploadedUrls.push(imageUrl);
+      }
+      
+      // Add the new image URLs to the gallery
+      setGalleryImages([...galleryImages, ...uploadedUrls]);
+      
+      toast({
+        title: "Images uploaded",
+        description: `Successfully uploaded ${uploadedUrls.length} images.`,
+      });
+    } catch (error: any) {
+      console.error('Gallery upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: error.response?.data?.message || "Failed to upload gallery images. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGalleryUploading(false);
     }
   };
-  
+
   const removeGalleryImage = (index: number) => {
     setGalleryImages(galleryImages.filter((_, i) => i !== index));
   };
-  
+
   const getInitials = (name: string = "") => {
     if (!name) return "U";
     return name.substring(0, 2).toUpperCase();
   };
-  
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <div className="flex-1 flex items-center justify-center p-6">
@@ -215,7 +345,7 @@ const Onboarding = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="displayName"
@@ -229,7 +359,7 @@ const Onboarding = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="industry"
@@ -254,7 +384,7 @@ const Onboarding = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="flex flex-col items-center pt-4">
                       <div className="relative">
                         <Avatar className="w-24 h-24 border-2 border-white shadow-md">
@@ -266,19 +396,24 @@ const Onboarding = () => {
                             </AvatarFallback>
                           )}
                         </Avatar>
-                        <label 
-                          htmlFor="profile-image" 
+                        <label
+                          htmlFor="profile-image"
                           className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
                         >
-                          <Camera className="h-4 w-4" />
+                          {isUploading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Camera className="h-4 w-4" />
+                          )}
                           <span className="sr-only">Upload profile picture</span>
                         </label>
-                        <input 
-                          id="profile-image" 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
+                        <input
+                          id="profile-image"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
                           onChange={handleProfileImageUpload}
+                          disabled={isUploading}
                         />
                       </div>
                       <p className="text-sm text-muted-foreground mt-2">
@@ -287,7 +422,7 @@ const Onboarding = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {step === 2 && (
                   <div className="space-y-4">
                     <FormField
@@ -297,10 +432,10 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>About</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder="Tell us a bit about yourself or your organization" 
-                              className="min-h-32" 
-                              {...field} 
+                            <Textarea
+                              placeholder="Tell us a bit about yourself or your organization"
+                              className="min-h-32"
+                              {...field}
                             />
                           </FormControl>
                           <FormDescription>
@@ -310,7 +445,7 @@ const Onboarding = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="website"
@@ -324,35 +459,43 @@ const Onboarding = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="space-y-2">
                       <h3 className="text-sm font-medium mb-1">Gallery Images (optional)</h3>
                       <div className="flex flex-wrap gap-2">
                         {galleryImages.map((image, index) => (
                           <div key={index} className="relative w-20 h-20 border rounded">
-                            <img 
-                              src={image} 
-                              alt={`Gallery ${index + 1}`} 
+                            <img
+                              src={image}
+                              alt={`Gallery ${index + 1}`}
                               className="w-full h-full object-cover rounded"
                             />
                             <button
                               type="button"
                               onClick={() => removeGalleryImage(index)}
                               className="absolute top-0 right-0 bg-red-500 text-white p-0.5 rounded-bl"
+                              disabled={isGalleryUploading}
                             >
                               <X className="h-3 w-3" />
                             </button>
                           </div>
                         ))}
                         <label className="w-20 h-20 border border-dashed rounded flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:text-gray-600">
-                          <Upload className="h-6 w-6" />
-                          <span className="text-xs mt-1">Add</span>
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            className="hidden" 
-                            multiple 
+                          {isGalleryUploading ? (
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                          ) : (
+                            <>
+                              <Upload className="h-6 w-6" />
+                              <span className="text-xs mt-1">Add</span>
+                            </>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            multiple
                             onChange={handleGalleryImageUpload}
+                            disabled={isGalleryUploading}
                           />
                         </label>
                       </div>
@@ -362,7 +505,7 @@ const Onboarding = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {step === 3 && (
                   <div className="space-y-4">
                     <FormField
@@ -378,7 +521,7 @@ const Onboarding = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="businessDescription"
@@ -386,17 +529,17 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>Business Description</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder="Describe what your business or organization does" 
-                              className="min-h-24" 
-                              {...field} 
+                            <Textarea
+                              placeholder="Describe what your business or organization does"
+                              className="min-h-24"
+                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="services"
@@ -404,10 +547,10 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>Services/Offerings</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder="List your main services or offerings, separated by commas" 
-                              className="min-h-24" 
-                              {...field} 
+                            <Textarea
+                              placeholder="List your main services or offerings, separated by commas"
+                              className="min-h-24"
+                              {...field}
                             />
                           </FormControl>
                           <FormDescription>
@@ -419,7 +562,7 @@ const Onboarding = () => {
                     />
                   </div>
                 )}
-                
+
                 {step === 4 && (
                   <div className="space-y-4">
                     <FormField
@@ -435,7 +578,7 @@ const Onboarding = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="phone"
@@ -449,7 +592,7 @@ const Onboarding = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="address"
@@ -457,17 +600,17 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>Address (optional)</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder="Your business or organization address" 
-                              className="min-h-20" 
-                              {...field} 
+                            <Textarea
+                              placeholder="Your business or organization address"
+                              className="min-h-20"
+                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="interests"
@@ -475,10 +618,10 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>Interests & Goals</FormLabel>
                           <FormControl>
-                            <Textarea 
+                            <Textarea
                               placeholder={`What kind of ${form.getValues("accountType")} opportunities are you looking for?`}
-                              className="min-h-32" 
-                              {...field} 
+                              className="min-h-32"
+                              {...field}
                             />
                           </FormControl>
                           <FormDescription>
@@ -488,7 +631,7 @@ const Onboarding = () => {
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="mt-6">
                       <h3 className="font-medium">Plan Selected: {user?.user_metadata?.plan || "Free"}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
@@ -498,16 +641,19 @@ const Onboarding = () => {
                   </div>
                 )}
               </CardContent>
-              
+
               <CardFooter className="flex justify-between">
                 {step > 1 ? (
                   <Button variant="outline" type="button" onClick={prevStep}>Back</Button>
                 ) : (
                   <Button variant="outline" type="button" onClick={() => navigate("/")}>Cancel</Button>
                 )}
-                
+
                 {step < 4 ? (
-                  <Button type="button" onClick={nextStep}>Continue</Button>
+                  <Button type="button" onClick={(e) => {
+                    e.preventDefault(); // Prevent form submission
+                    nextStep();
+                  }}>Continue</Button>
                 ) : (
                   <Button type="submit">Complete Setup</Button>
                 )}
@@ -516,20 +662,20 @@ const Onboarding = () => {
           </Form>
         </Card>
       </div>
-      
+
       <div className="hidden md:block md:w-1/2 bg-colink-navy p-12">
         <div className="h-full flex flex-col justify-center text-white max-w-md mx-auto">
           <h2 className="text-3xl font-bold mb-6">
-            {step === 1 ? 'Welcome to CoLink Venture!' : 
-             step === 2 ? 'Tell us your story' : 
-             step === 3 ? 'Business Details' :
-             'Almost there!'}
+            {step === 1 ? 'Welcome to CoLink Venture!' :
+              step === 2 ? 'Tell us your story' :
+                step === 3 ? 'Business Details' :
+                  'Almost there!'}
           </h2>
           <p className="mb-6 text-lg">
-            {step === 1 ? 'First, let\'s understand your needs so we can tailor your experience.' : 
-             step === 2 ? 'Share more about yourself or your organization to attract the right partners.' : 
-             step === 3 ? 'Tell us about your business or services so we can showcase them to potential partners.' :
-             'Just a few more details to help us find the perfect matches for you.'}
+            {step === 1 ? 'First, let\'s understand your needs so we can tailor your experience.' :
+              step === 2 ? 'Share more about yourself or your organization to attract the right partners.' :
+                step === 3 ? 'Tell us about your business or services so we can showcase them to potential partners.' :
+                  'Just a few more details to help us find the perfect matches for you.'}
           </p>
           <div className="flex space-x-2 mb-8">
             <div className={`h-2 flex-1 rounded ${step >= 1 ? 'bg-white' : 'bg-white/30'}`}></div>

@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export type AccountType = "partnership" | "sponsorship";
 
 export type Business = {
+  business: any;
+  owner: any;
   id: string;
   name: string;
   description: string;

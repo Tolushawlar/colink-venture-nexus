@@ -10,7 +10,7 @@ const businesses: Business[] = [
     id: "1",
     name: "TechSolutions Inc.",
     description: "Providing innovative tech solutions for modern businesses.",
-    logo: "https://images.unsplash.com/photo-1560179707-f14e90ef3603?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTF8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
+    logo: "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
     industry: "Technology",
     partnershipOffers: ["Software Integration", "Tech Consulting"],
   },

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, FormEvent } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
+import {
   Calendar,
   MessageSquare,
   Globe,
@@ -25,129 +25,14 @@ import {
   MapPin,
   FileText,
   Share2,
-  Building
+  Building,
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Business } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-const mockBusinesses: Business[] = [
-  {
-    id: "1",
-    name: "Tech Solutions Inc",
-    description: "Enterprise software solutions provider specializing in AI and automation.",
-    logo: "https://via.placeholder.com/150",
-    industry: "Technology",
-    partnershipOffers: ["Software Integration", "API Development", "Tech Consulting"],
-    sponsorshipOffers: ["Tech Conference", "Hackathon Events"],
-    website: "https://techsolutions-example.com",
-    email: "partnerships@techsolutions-example.com",
-    phone: "+1 (555) 123-4567",
-    location: "San Francisco, CA",
-    gallery: [
-      "https://via.placeholder.com/400x300?text=Office",
-      "https://via.placeholder.com/400x300?text=Team",
-      "https://via.placeholder.com/400x300?text=Product"
-    ],
-    posts: [
-      {
-        id: "b1p1",
-        title: "Announcing Our New AI Platform",
-        content: "We're excited to announce the launch of our new AI-driven analytics platform that helps businesses make data-driven decisions.",
-        date: "2025-03-15",
-        type: "update"
-      },
-      {
-        id: "b1p2",
-        title: "Join Our Partner Program",
-        content: "We're expanding our partner program to include technology integration specialists. Apply now to become a certified Tech Solutions Partner.",
-        date: "2025-03-05",
-        type: "announcement"
-      }
-    ]
-  },
-  {
-    id: "2",
-    name: "Creative Studios",
-    description: "Creative design agency offering branding, web design, and digital marketing.",
-    logo: "https://via.placeholder.com/150",
-    industry: "Design",
-    partnershipOffers: ["Brand Collaboration", "Content Creation"],
-    sponsorshipOffers: ["Art Exhibition", "Design Workshop"],
-    website: "https://creativestudios-example.com",
-    email: "hello@creativestudios-example.com",
-    phone: "+1 (555) 987-6543",
-    location: "New York, NY",
-    gallery: [
-      "https://via.placeholder.com/400x300?text=Portfolio1",
-      "https://via.placeholder.com/400x300?text=Portfolio2",
-      "https://via.placeholder.com/400x300?text=Studio"
-    ],
-    posts: [
-      {
-        id: "b2p1",
-        title: "Design Trends for 2025",
-        content: "Our design experts analyze the top design trends to watch for in 2025 and how they'll impact brand identities.",
-        date: "2025-04-02",
-        type: "update"
-      }
-    ]
-  },
-  {
-    id: "3",
-    name: "Marketing Experts",
-    description: "Full-service marketing agency with expertise in digital and traditional channels.",
-    logo: "https://via.placeholder.com/150",
-    industry: "Marketing",
-    partnershipOffers: ["Co-marketing Campaigns", "Influencer Partnerships"],
-    sponsorshipOffers: ["Marketing Conference", "Industry Events"],
-    website: "https://marketingexperts-example.com",
-    email: "info@marketingexperts-example.com",
-    phone: "+1 (555) 789-0123",
-    location: "Chicago, IL",
-    gallery: [
-      "https://via.placeholder.com/400x300?text=Campaign1",
-      "https://via.placeholder.com/400x300?text=Campaign2"
-    ],
-    posts: [
-      {
-        id: "b3p1",
-        title: "Case Study: Increasing Conversion by 200%",
-        content: "Learn how we helped a SaaS startup triple their conversion rate through targeted digital marketing strategies.",
-        date: "2025-03-25",
-        type: "update"
-      }
-    ]
-  },
-  {
-    id: "4",
-    name: "Event Masters",
-    description: "Professional event planning and management services for corporate clients.",
-    logo: "https://via.placeholder.com/150",
-    industry: "Events",
-    partnershipOffers: ["Venue Partnership", "Logistics Collaboration"],
-    sponsorshipOffers: ["Corporate Events", "Conference Sponsorship"],
-    website: "https://eventmasters-example.com",
-    email: "events@eventmasters-example.com",
-    phone: "+1 (555) 456-7890",
-    location: "Los Angeles, CA",
-    gallery: [
-      "https://via.placeholder.com/400x300?text=Event1",
-      "https://via.placeholder.com/400x300?text=Event2",
-      "https://via.placeholder.com/400x300?text=Venue"
-    ],
-    posts: [
-      {
-        id: "b4p1",
-        title: "Planning Your 2025 Corporate Events",
-        content: "Start planning your 2025 corporate events now with our comprehensive guide to venue selection, budget planning, and theme development.",
-        date: "2025-04-01",
-        type: "service"
-      }
-    ]
-  }
-];
 
 const BusinessDetails = () => {
   const { id } = useParams();
@@ -156,75 +41,256 @@ const BusinessDetails = () => {
   const { toast } = useToast();
   const [business, setBusiness] = useState<Business | null>(null);
   const searchParams = new URLSearchParams(location.search);
-  const platformType = searchParams.get('type') || 'partnership';
+  // Check if this is a profile edit request
+  const isProfileEdit = searchParams.get('profile') === 'edit';
+  console.log("URL search params:", location.search, "isProfileEdit:", isProfileEdit);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
   
+  // Contact form state
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: ""
+  });
+
+  // Handle profile edit redirection
   useEffect(() => {
-    if (id) {
-      const foundBusiness = mockBusinesses.find(b => b.id === id);
-      if (foundBusiness) {
-        setBusiness(foundBusiness);
+    if (isProfileEdit) {
+      console.log("Profile edit detected, redirecting to profile page");
+      // Set a flag in sessionStorage to prevent auto-navigation
+      sessionStorage.setItem('skipAutoNavigation', 'true');
+      // Use direct window location to break the navigation cycle
+      window.location.href = '/profile';
+    }
+    
+    // Cleanup function to remove the flag
+    return () => {
+      sessionStorage.removeItem('skipAutoNavigation');
+    };
+  }, [isProfileEdit]);
+  
+  // Fetch business details
+  useEffect(() => {
+    // Skip fetching if this is a profile edit
+    if (isProfileEdit) return;
+    
+    const fetchBusinessDetails = async () => {
+      if (!id) return;
+      
+      setLoading(true);
+      try {
+        const response = await fetch(`http://localhost:3000/api/businesses/${id}`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch business details: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Business data:", data); // Debug log
+        setBusiness(data);
+        
+        // Fetch user posts after getting business details
+        if (data.business?.owner?.id) {
+          fetchUserPosts(data.business.owner.id);
+        }
+      } catch (err) {
+        console.error("Error fetching business details:", err);
+        setError(err instanceof Error ? err.message : "Failed to load business details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchUserPosts = async (ownerId) => {
+      setLoadingPosts(true);
+      try {
+        const response = await fetch('http://localhost:3000/api/posts');
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch posts: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        // Filter posts by owner ID
+        const filteredPosts = data.posts.filter(post => post.userId === ownerId);
+        setPosts(filteredPosts || []);
+      } catch (err) {
+        console.error("Error fetching posts:", err);
+      } finally {
+        setLoadingPosts(false);
+      }
+    };
+
+    fetchBusinessDetails();
+  }, [id, isProfileEdit]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setContactForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleContact = async (e?: FormEvent) => {
+    if (e) e.preventDefault();
+    
+    if (!business) return;
+    
+    // Validate form fields
+    if (!contactForm.name || !contactForm.email || !contactForm.subject || !contactForm.message) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all fields to send your message.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setSendingEmail(true);
+    
+    try {
+      const response = await fetch("http://localhost:3000/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          recipientEmail: business.business.owner.email,
+          senderName: contactForm.name,
+          senderEmail: contactForm.email,
+          subject: contactForm.subject,
+          message: contactForm.message,
+          businessName: business.business.name
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to send email");
+      }
+      
+      // Reset form on success
+      setContactForm({
+        name: "",
+        email: "",
+        subject: "",
+        message: ""
+      });
+      
+      toast({
+        title: "Message Sent",
+        description: `Your message has been sent to ${business.business.name}.`,
+      });
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast({
+        title: "Failed to Send Message",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  let parsedPartnershipOffers = [];
+  try {
+    if (business?.business?.partnershipOffers) {
+      parsedPartnershipOffers = JSON.parse(business.business.partnershipOffers);
+      // Ensure it's an array after parsing, sometimes it could be null or another type if the string is "null"
+      if (!Array.isArray(parsedPartnershipOffers)) {
+        parsedPartnershipOffers = [];
       }
     }
-  }, [id]);
-  
-  const handleContact = () => {
-    toast({
-      title: "Contact Request Sent",
-      description: `Your contact request has been sent to ${business?.name}.`,
-    });
-  };
-  
+  } catch (e) {
+    console.error("Failed to parse partnershipOffers:", e);
+    parsedPartnershipOffers = []; // Default to empty array on error
+  }
+
+  let parsedSponsorshipOffers = [];
+  try {
+    if (business?.business?.sponsorshipOffers) {
+      parsedSponsorshipOffers = JSON.parse(business.business.sponsorshipOffers);
+      if (!Array.isArray(parsedSponsorshipOffers)) {
+        parsedSponsorshipOffers = [];
+      }
+    }
+  } catch (e) {
+    console.error("Failed to parse sponsorshipOffers:", e);
+    parsedSponsorshipOffers = [];
+  }
+
   const handleChat = () => {
     navigate('/chats');
-    
+
     toast({
       title: "Chat Started",
-      description: `You can now chat with ${business?.name}.`,
+      description: `You can now chat with ${business?.business?.name || "this business"}.`,
     });
   };
-  
+
   const handleScheduleAppointment = () => {
     navigate('/appointments');
-    
+
     toast({
       title: "Appointment Scheduled",
-      description: `Your appointment with ${business?.name} has been scheduled.`,
+      description: `Your appointment with ${business?.business?.name || "this business"} has been scheduled.`,
     });
   };
-  
-  if (!business) {
+
+  if (loading) {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center h-64">
-          <p>Loading business details...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="ml-2">Loading business details...</p>
         </div>
       </DashboardLayout>
     );
   }
   
+  if (error || !business) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col justify-center items-center h-64">
+          <p className="text-red-500 mb-4">{error || "Failed to load business details"}</p>
+          <Button onClick={() => navigate(-1)}>Go Back</Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex flex-col md:flex-row md:items-center gap-6">
             <div className="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded-lg flex items-center justify-center">
-              <img 
-                src={business.logo} 
-                alt={business.name} 
+              <img
+                src={business.business.logo}
+                alt={business.business.name || "Business logo"}
                 className="max-w-full max-h-full object-contain"
               />
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold">{business.name}</h1>
-              <p className="text-gray-500 mt-1">{business.industry}</p>
-              <p className="mt-3 text-gray-700">{business.description}</p>
+              <h1 className="text-3xl font-bold">{business.business.name}</h1>
+              <p className="text-gray-500 mt-1">{business.business.industry}</p>
+              <p className="mt-3 text-gray-700">{business.business.description}</p>
             </div>
             <div className="flex flex-col md:flex-row gap-3 mt-4 md:mt-0">
-              <Button onClick={handleContact}>
+              {/* <Button onClick={handleContact}>
                 <Mail className="mr-2 h-4 w-4" />
                 Contact
-              </Button>
-              <Button variant="outline" onClick={handleChat}>
+              </Button> */}
+              <Button  onClick={handleChat}>
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Chat
               </Button>
@@ -235,7 +301,7 @@ const BusinessDetails = () => {
             </div>
           </div>
         </div>
-        
+
         <Tabs defaultValue="about">
           <TabsList className="grid grid-cols-3 md:grid-cols-5">
             <TabsTrigger value="about">About</TabsTrigger>
@@ -244,39 +310,39 @@ const BusinessDetails = () => {
             <TabsTrigger value="posts">Posts</TabsTrigger>
             <TabsTrigger value="contact">Contact</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="about" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>About {business.name}</CardTitle>
+                <CardTitle>About {business.business.name}</CardTitle>
                 <CardDescription>Company information and overview</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-700">{business.description}</p>
-                
+                <p className="text-gray-700">{business.business.description}</p>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div className="flex items-center gap-3">
                     <Building className="h-5 w-5 text-gray-500" />
                     <div>
                       <p className="text-sm font-medium">Industry</p>
-                      <p className="text-gray-700">{business.industry}</p>
+                      <p className="text-gray-700">{business.business.industry}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <MapPin className="h-5 w-5 text-gray-500" />
                     <div>
                       <p className="text-sm font-medium">Location</p>
-                      <p className="text-gray-700">{business.location}</p>
+                      <p className="text-gray-700">{business.business.location}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <Globe className="h-5 w-5 text-gray-500" />
                     <div>
                       <p className="text-sm font-medium">Website</p>
-                      <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-primary">
-                        {business.website?.replace(/^https?:\/\//, '')}
+                      <a href={business.business.website} target="_blank" rel="noopener noreferrer" className="text-primary">
+                        {business.business.website?.replace(/^https?:\/\//, '')}
                       </a>
                     </div>
                   </div>
@@ -284,7 +350,7 @@ const BusinessDetails = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="services" className="mt-6">
             <Card>
               <CardHeader>
@@ -294,17 +360,17 @@ const BusinessDetails = () => {
               <CardContent className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Partnership Opportunities</h3>
-                  {business.partnershipOffers && business.partnershipOffers.length > 0 ? (
+                  {parsedPartnershipOffers && parsedPartnershipOffers.length > 0 ? (
                     <ul className="space-y-3">
-                      {business.partnershipOffers.map((offer, index) => (
+                      {parsedPartnershipOffers.map((offer, index) => (
                         <li key={index} className="bg-gray-50 p-4 rounded-lg">
                           <div className="font-medium">{offer}</div>
                           <p className="text-gray-600 text-sm mt-1">
                             Contact us to explore this partnership opportunity.
                           </p>
-                          <Button size="sm" className="mt-2" onClick={handleContact}>
+                          {/* <Button size="sm" className="mt-2" onClick={handleContact}>
                             Learn More
-                          </Button>
+                          </Button> */}
                         </li>
                       ))}
                     </ul>
@@ -312,20 +378,20 @@ const BusinessDetails = () => {
                     <p className="text-muted-foreground">No partnership offers available at the moment.</p>
                   )}
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Sponsorship Opportunities</h3>
-                  {business.sponsorshipOffers && business.sponsorshipOffers.length > 0 ? (
+                  {parsedSponsorshipOffers && parsedSponsorshipOffers.length > 0 ? (
                     <ul className="space-y-3">
-                      {business.sponsorshipOffers.map((offer, index) => (
+                      {parsedSponsorshipOffers.map((offer, index) => (
                         <li key={index} className="bg-gray-50 p-4 rounded-lg">
                           <div className="font-medium">{offer}</div>
                           <p className="text-gray-600 text-sm mt-1">
                             Contact us to learn more about this sponsorship opportunity.
                           </p>
-                          <Button size="sm" className="mt-2" onClick={handleContact}>
+                          {/* <Button size="sm" className="mt-2" onClick={handleContact}>
                             Learn More
-                          </Button>
+                          </Button> */}
                         </li>
                       ))}
                     </ul>
@@ -336,7 +402,7 @@ const BusinessDetails = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="gallery" className="mt-6">
             <Card>
               <CardHeader>
@@ -344,17 +410,28 @@ const BusinessDetails = () => {
                 <CardDescription>Images and project portfolio</CardDescription>
               </CardHeader>
               <CardContent>
-                {business.gallery && business.gallery.length > 0 ? (
+                {business.business.gallery ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {business.gallery.map((image, index) => (
-                      <div key={index} className="aspect-video rounded-lg overflow-hidden">
-                        <img 
-                          src={image} 
-                          alt={`${business.name} gallery image ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ))}
+                    {Array.isArray(business.business.gallery) 
+                      ? business.business.gallery.map((image, index) => (
+                          <div key={index} className="aspect-video rounded-lg overflow-hidden">
+                            <img
+                              src={image}
+                              alt={`Gallery image ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))
+                      : JSON.parse(business.business.gallery).map((image, index) => (
+                          <div key={index} className="aspect-video rounded-lg overflow-hidden">
+                            <img
+                              src={image}
+                              alt={`Gallery image ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))
+                    }
                   </div>
                 ) : (
                   <p className="text-muted-foreground">No gallery images available.</p>
@@ -362,7 +439,7 @@ const BusinessDetails = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="posts" className="mt-6">
             <Card>
               <CardHeader>
@@ -370,15 +447,19 @@ const BusinessDetails = () => {
                 <CardDescription>Recent announcements and updates</CardDescription>
               </CardHeader>
               <CardContent>
-                {business.posts && business.posts.length > 0 ? (
+                {loadingPosts ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : posts.length > 0 ? (
                   <div className="space-y-6">
-                    {business.posts.map((post) => (
+                    {posts.map((post) => (
                       <div key={post.id} className="border-b pb-6 last:border-0 last:pb-0">
                         <h3 className="font-semibold text-lg">{post.title}</h3>
                         <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
                           <div className="flex items-center">
                             <Calendar className="mr-1 h-3 w-3" />
-                            {post.date}
+                            {new Date(post.createdAt).toLocaleDateString()}
                           </div>
                           <div className="px-1.5 py-0.5 bg-gray-100 rounded text-xs">
                             {post.type}
@@ -404,7 +485,7 @@ const BusinessDetails = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="contact" className="mt-6">
             <Card>
               <CardHeader>
@@ -417,52 +498,89 @@ const BusinessDetails = () => {
                     <Mail className="h-5 w-5 text-gray-500" />
                     <div>
                       <p className="text-sm font-medium">Email</p>
-                      <a href={`mailto:${business.email}`} className="text-primary">
-                        {business.email}
+                      <a href={`mailto:${business.business.owner.email}`} className="text-primary">
+                        {business.business.owner.email}
                       </a>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-gray-500" />
                     <div>
                       <p className="text-sm font-medium">Phone</p>
-                      <a href={`tel:${business.phone}`} className="text-gray-700">
-                        {business.phone}
+                      <a href={`tel:${business.business.phone}`} className="text-gray-700">
+                        {business.business.phone}
                       </a>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <MapPin className="h-5 w-5 text-gray-500" />
                     <div>
                       <p className="text-sm font-medium">Location</p>
-                      <p className="text-gray-700">{business.location}</p>
+                      <p className="text-gray-700">{business.business.location}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <Globe className="h-5 w-5 text-gray-500" />
                     <div>
                       <p className="text-sm font-medium">Website</p>
-                      <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-primary">
-                        {business.website?.replace(/^https?:\/\//, '')}
+                      <a href={business.business.website} target="_blank" rel="noopener noreferrer" className="text-primary">
+                        {business.business.website?.replace(/^https?:\/\//, '')}
                       </a>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="mt-6">
                   <h3 className="font-medium mb-3">Send a Message</h3>
-                  <div className="space-y-3">
-                    <Input placeholder="Your name" />
-                    <Input placeholder="Your email" type="email" />
-                    <Input placeholder="Subject" />
-                    <Textarea placeholder="Your message" className="min-h-32" />
-                    <Button onClick={handleContact} className="w-full">
-                      Send Message
+                  <form onSubmit={handleContact} className="space-y-3">
+                    <Input 
+                      name="name"
+                      placeholder="Your name" 
+                      value={contactForm.name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <Input 
+                      name="email"
+                      placeholder="Your email" 
+                      type="email" 
+                      value={contactForm.email}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <Input 
+                      name="subject"
+                      placeholder="Subject" 
+                      value={contactForm.subject}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <Textarea 
+                      name="message"
+                      placeholder="Your message" 
+                      className="min-h-32" 
+                      value={contactForm.message}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      disabled={sendingEmail}
+                    >
+                      {sendingEmail ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        "Send Message"
+                      )}
                     </Button>
-                  </div>
+                  </form>
                 </div>
               </CardContent>
             </Card>

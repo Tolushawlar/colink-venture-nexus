@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -35,7 +36,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/landing/Navbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera } from "lucide-react";
+import { Camera, Loader2 } from "lucide-react";
+import axios from "axios";
 
 const formSchema = z.object({
   displayName: z.string().min(2, "Display name must be at least 2 characters"),
@@ -59,10 +61,11 @@ const industries = [
 ];
 
 const Profile = () => {
-  const { user, updateUserProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,31 +78,61 @@ const Profile = () => {
     },
   });
 
-  // Load user data into the form
+  // Fetch user profile data from API
   useEffect(() => {
-    if (user) {
-      form.reset({
-        displayName: user.user_metadata?.displayName || "",
-        bio: user.user_metadata?.bio || "",
-        website: user.user_metadata?.website || "",
-        industry: user.user_metadata?.industry || "",
-        interests: user.user_metadata?.interests || "",
-      });
-      // Set profile image from user metadata if available
-      setProfileImage(user.user_metadata?.avatarUrl || null);
-    }
-  }, [user, form]);
+    const fetchUserProfile = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get('http://localhost:3000/api/users/profile', {
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+          }
+        });
+        
+        const userData = response.data.user;
+        
+        // Update form with user data from API
+        form.reset({
+          displayName: userData.displayName || "",
+          bio: userData.bio || "",
+          website: userData.website || "",
+          industry: userData.industry || "",
+          interests: userData.interests || "",
+        });
+        
+        // Set profile image
+        setProfileImage(userData.avatarUrl || null);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load profile data.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [form, toast]);
   
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       // Update user profile with form values and profile image
-      await updateUserProfile({
+      const updateData = {
         displayName: values.displayName,
         bio: values.bio,
         website: values.website,
         industry: values.industry,
         interests: values.interests,
         avatarUrl: profileImage
+      };
+      
+      await axios.put('http://localhost:3000/api/users/profile', updateData, {
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        }
       });
       
       toast({
@@ -107,8 +140,11 @@ const Profile = () => {
         description: "Your profile has been updated successfully.",
       });
       
+      // Get account type from session storage
+      const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+      const accountType = userData.accountType;
+      
       // Navigate back to the user dashboard
-      const accountType = user?.user_metadata?.accountType;
       if (accountType === 'partnership') {
         navigate('/partnerships');
       } else {
@@ -124,19 +160,50 @@ const Profile = () => {
     }
   };
   
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // For now, just create a local URL for the image
-      // In a real app, you would upload this to storage
-      const imageUrl = URL.createObjectURL(file);
+    if (!file) return;
+    
+    setIsUploading(true);
+    
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+      // Upload image to Cloudinary via backend
+      const uploadResponse = await axios.post('http://localhost:3000/api/uploads', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+      
+      const imageUrl = uploadResponse.data.data.imageUrl;
+      console.log(imageUrl);
       setProfileImage(imageUrl);
       
-      // Show success toast
+      // Immediately update user profile with new avatar URL
+      await axios.put('http://localhost:3000/api/users/profile', {
+        avatarUrl: imageUrl
+      }, {
+        headers: {
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+      
       toast({
-        title: "Image uploaded",
+        title: "Image uploaded", 
         description: "Your profile picture has been updated.",
       });
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: error.response?.data?.message || "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -157,6 +224,11 @@ const Profile = () => {
               <CardTitle>Profile Information</CardTitle>
               <CardDescription>Update your profile details</CardDescription>
             </CardHeader>
+            {isLoading ? (
+              <CardContent className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </CardContent>
+            ) : (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)}>
                 <CardContent className="space-y-6">
@@ -175,7 +247,11 @@ const Profile = () => {
                         htmlFor="profile-image" 
                         className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full cursor-pointer hover:bg-primary/90 transition-colors"
                       >
-                        <Camera className="h-4 w-4" />
+                        {isUploading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Camera className="h-4 w-4" />
+                        )}
                         <span className="sr-only">Upload profile picture</span>
                       </label>
                       <input 
@@ -184,6 +260,7 @@ const Profile = () => {
                         accept="image/*" 
                         className="hidden" 
                         onChange={handleImageUpload}
+                        disabled={isUploading}
                       />
                     </div>
                     <p className="text-sm text-muted-foreground mt-2">
@@ -292,7 +369,7 @@ const Profile = () => {
                     variant="outline" 
                     type="button" 
                     onClick={() => {
-                      const accountType = user?.user_metadata?.accountType;
+                      const accountType = sessionStorage.getItem('accountType')?.slice(1, -1);
                       if (accountType === 'partnership') {
                         navigate('/partnerships');
                       } else {
@@ -306,6 +383,7 @@ const Profile = () => {
                 </CardFooter>
               </form>
             </Form>
+            )}
           </Card>
         </div>
       </div>

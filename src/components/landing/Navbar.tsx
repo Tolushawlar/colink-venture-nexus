@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { NavItem } from "@/types";
 import { Menu, X, ChevronDown, User, LogOut, Settings, Edit } from "lucide-react";
@@ -54,11 +54,39 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  
+  // Fetch user profile image
+  useEffect(() => {
+    const fetchUserAvatar = async () => {
+      try {
+        const token = sessionStorage.getItem('token');
+        if (!token || !user) return;
+        
+        const response = await fetch('http://localhost:3000/api/users/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user?.avatarUrl) {
+            setAvatarUrl(data.user.avatarUrl);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user avatar:", error);
+      }
+    };
+    
+    fetchUserAvatar();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
   };
-  
+
   const handleNavigateToAuth = () => {
     navigate("/auth");
     setIsOpen(false);
@@ -71,15 +99,12 @@ const Navbar = () => {
   };
 
   const navigateToDashboard = () => {
-    const accountType = user?.user_metadata?.accountType;
-    if (accountType === 'partnership') {
-      navigate('/partnerships');
-    } else if (accountType === 'sponsorship') {
-      navigate('/sponsorships');
+    const accountType = sessionStorage.getItem('accountType')?.slice(1, -1);
+    if (accountType) {
+      navigate(`/${accountType}s`);
     } else {
       navigate('/onboarding');
     }
-    setIsOpen(false);
   };
 
   const navigateToProfile = () => {
@@ -94,10 +119,10 @@ const Navbar = () => {
       <div className="container-wide flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center space-x-2">
-            <img 
-              src="/lovable-uploads/b2f72189-44d3-499b-820d-4f1b98ea3cb7.png" 
-              alt="CoLink Venture" 
-              className="h-8" 
+            <img
+              src="/lovable-uploads/b2f72189-44d3-499b-820d-4f1b98ea3cb7.png"
+              alt="CoLink Venture"
+              className="h-8"
             />
           </Link>
           <nav className="hidden md:flex items-center gap-6">
@@ -148,7 +173,7 @@ const Navbar = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email || ""} />
+                    <AvatarImage src={avatarUrl || user.user_metadata?.avatar_url} alt={user.email || ""} />
                     <AvatarFallback>{getUserInitials()}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -243,14 +268,14 @@ const Navbar = () => {
                 <>
                   <div className="flex items-center gap-2 py-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email || ""} />
+                      <AvatarImage src={avatarUrl || user.user_metadata?.avatar_url} alt={user.email || ""} />
                       <AvatarFallback>{getUserInitials()}</AvatarFallback>
                     </Avatar>
                     <span className="text-sm font-medium">{user.email}</span>
                   </div>
                   {isAdmin && (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full flex items-center justify-center gap-2"
                       onClick={() => {
                         navigate("/admin-dashboard");
@@ -261,8 +286,8 @@ const Navbar = () => {
                       Admin Dashboard
                     </Button>
                   )}
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="w-full flex items-center justify-center gap-2"
                     onClick={handleSignOut}
                   >
@@ -272,14 +297,14 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="border-colink-navy text-colink-navy hover:bg-colink-navy/10 w-full"
                     onClick={handleNavigateToAuth}
                   >
                     Log In
                   </Button>
-                  <Button 
+                  <Button
                     className="bg-colink-navy hover:bg-colink-navy/90 text-white w-full"
                     onClick={handleNavigateToAuth}
                   >

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Since we don't have access to the full Auth.tsx file in the current code state,
 // we'll need to create a new component that adds a Back to Home link
@@ -12,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Navigate, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft } from "lucide-react";
+import emailjs from '@emailjs/browser';
 
 const Auth = () => {
   const { user } = useAuth();
@@ -20,7 +22,8 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  
+  const [activeTab, setActiveTab] = useState("signin");
+
   // If already logged in, redirect to home page
   if (user) {
     return <Navigate to="/" replace />;
@@ -29,21 +32,42 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
       });
-      
-      if (error) {
+
+      const data = await response.json();
+
+      if (!response.ok) {
         toast({
           variant: "destructive",
           title: "Sign In Failed",
-          description: error.message,
+          description: data.message || "Failed to sign in"
         });
       } else {
-        navigate("/");
+        // Store auth data in session storage
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data.user));        // Store auth data in session storage
+        sessionStorage.setItem('accountType', JSON.stringify(data.user.accountType));        // Store auth data in session storage
+        sessionStorage.setItem('SIGNED_IN', 'true');
+        const onboarded = sessionStorage.getItem('onboarded');
+        console.log(onboarded);
+        // const not = ""
+        // if (onboarded) {
+        //   navigate('/');
+        // } else {
+        //   navigate('/Onboarding');
+        // }
+        navigate("/")
       }
     } catch (error: any) {
       toast({
@@ -55,28 +79,68 @@ const Auth = () => {
       setLoading(false);
     }
   };
-  
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
+      const signupData = {
+        email: email,
+        password: password,
+        displayName: "",
+        bio: "",
+        avatarUrl: "",
+        website: "",
+        industry: "",
+        interests: "",
+        accountType: "partnership",
+      };
+
+      const response = await fetch("/api/users/register", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(signupData)
       });
-      
-      if (error) {
+
+      const data = await response.json();
+
+      if (!response.ok) {
         toast({
           variant: "destructive",
           title: "Sign Up Failed",
-          description: error.message,
+          description: data.message || "Failed to create account"
         });
       } else {
+        // Store auth data in session storage
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+        sessionStorage.setItem('onboarded', "!onboarded");
+
+        // Send welcome email
+        const templateParams = {
+          email: signupData.email,
+          name: email.split('@')[0],
+          from_name: "CoLink Venture",
+          message: "Welcome to CoLink Venture!"
+        };
+
+        emailjs.send('service_nmp9326', 'template_t5a8qwp', templateParams, 'JEOwNb-hlyrgzUx-F')
+          .then((result) => {
+            console.log('Email sent successfully:', result.text);
+          }, (error) => {
+            console.log('Failed to send email:', error.text);
+          });
+
         toast({
-          title: "Verification email sent",
-          description: "Please check your email to verify your account.",
+          title: "Account created",
+          description: data.Accountcreated || "Your account has been created successfully."
         });
+
+        // Switch to sign in tab after successful signup
+        setActiveTab("signin");
       }
     } catch (error: any) {
       toast({
@@ -88,7 +152,7 @@ const Auth = () => {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
@@ -97,7 +161,7 @@ const Auth = () => {
           <Link to="/" className="inline-flex items-center text-sm text-gray-600 hover:text-primary transition-colors mb-6">
             <ArrowLeft className="mr-1 h-4 w-4" /> Back to Home
           </Link>
-          
+
           <h1 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
             CoLink Venture
           </h1>
@@ -105,13 +169,13 @@ const Auth = () => {
             Connect, Partner, and Grow with CoLink Venture
           </p>
         </div>
-        
-        <Tabs defaultValue="signin" className="w-full">
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="signin">
             <Card>
               <CardHeader>
@@ -126,7 +190,7 @@ const Auth = () => {
                     <label htmlFor="signin-email" className="text-sm font-medium">
                       Email
                     </label>
-                    <Input 
+                    <Input
                       id="signin-email"
                       type="email"
                       placeholder="name@example.com"
@@ -139,7 +203,7 @@ const Auth = () => {
                     <label htmlFor="signin-password" className="text-sm font-medium">
                       Password
                     </label>
-                    <Input 
+                    <Input
                       id="signin-password"
                       type="password"
                       placeholder="••••••••"
@@ -155,7 +219,7 @@ const Auth = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="signup">
             <Card>
               <CardHeader>
@@ -170,7 +234,7 @@ const Auth = () => {
                     <label htmlFor="signup-email" className="text-sm font-medium">
                       Email
                     </label>
-                    <Input 
+                    <Input
                       id="signup-email"
                       type="email"
                       placeholder="name@example.com"
@@ -183,7 +247,7 @@ const Auth = () => {
                     <label htmlFor="signup-password" className="text-sm font-medium">
                       Password
                     </label>
-                    <Input 
+                    <Input
                       id="signup-password"
                       type="password"
                       placeholder="••••••••"

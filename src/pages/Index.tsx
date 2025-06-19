@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
 import Features from "@/components/landing/Features";
@@ -14,34 +14,58 @@ import { useNavigate } from "react-router-dom";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-// Sample business data for search suggestions
-const businessSuggestions = [
-  { id: "1", name: "Tech Innovations Inc", industry: "Technology" },
-  { id: "2", name: "Green Earth Solutions", industry: "Environmental" },
-  { id: "3", name: "Global Finance Partners", industry: "Finance" },
-  { id: "4", name: "Creative Studios", industry: "Media & Entertainment" },
-  { id: "5", name: "Health First Solutions", industry: "Healthcare" },
-  { id: "6", name: "Smart Marketing Agency", industry: "Marketing" },
-  { id: "7", name: "Urban Architecture", industry: "Construction" },
-  { id: "8", name: "Foodie Delights", industry: "Food & Beverage" },
-];
-
 const Index = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Check for onboarded value in session storage and redirect if needed
+  useEffect(() => {
+    const onboarded = sessionStorage.getItem('onboarded');
+    const isSignedIn = sessionStorage.getItem('SIGNED_IN') === 'true';
+    
+    // Only redirect to onboarding if user is signed in
+    if (onboarded && isSignedIn) {
+      navigate('/onboarding');
+    }
+  }, [navigate]);
+  
+  useEffect(() => {
+    const fetchBusinesses = async () => {
+      if (!searchQuery.trim()) {
+        setFilteredSuggestions([]);
+        return;
+      }
+      
+      setIsLoading(true);
+      try {
+        const response = await fetch('http://localhost:3000/api/businesses/');
+        const data = await response.json();
+        
+        const filtered = data.businesses.filter(business => 
+          business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          business.industry?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        
+        setFilteredSuggestions(filtered);
+      } catch (error) {
+        console.error('Error fetching businesses:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    const timer = setTimeout(fetchBusinesses, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
   
   const handleSearch = () => {
     if (searchQuery.trim()) {
       navigate(`/partnerships?search=${encodeURIComponent(searchQuery)}`);
     }
   };
-
-  const filteredSuggestions = searchQuery
-    ? businessSuggestions.filter(business => 
-        business.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        business.industry.toLowerCase().includes(searchQuery.toLowerCase()))
-    : [];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -85,7 +109,7 @@ const Index = () => {
                     <PopoverContent className="p-0 w-[calc(100%-2rem)] max-w-xl" align="start">
                       <Command>
                         <CommandList>
-                          <CommandEmpty>No results found.</CommandEmpty>
+                          <CommandEmpty>{isLoading ? 'Loading...' : 'No results found.'}</CommandEmpty>
                           <CommandGroup heading="Suggestions">
                             {filteredSuggestions.map((business) => (
                               <CommandItem
@@ -93,7 +117,7 @@ const Index = () => {
                                 onSelect={() => {
                                   setSearchQuery(business.name);
                                   setOpen(false);
-                                  navigate(`/partnerships?business=${encodeURIComponent(business.id)}`);
+                                  navigate(`/business/${business.id}?type=partnership`);
                                 }}
                                 className="cursor-pointer"
                               >
