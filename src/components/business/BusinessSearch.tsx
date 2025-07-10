@@ -23,6 +23,7 @@ import {
 import { Search, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { Business } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
+import { apiCall } from "@/config/api";
 import { 
   Pagination, 
   PaginationContent, 
@@ -31,6 +32,12 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination";
+
+interface BusinessSearchProps {
+  platformType: string;
+  initialSearch?: string;
+  businessId?: string | null;
+}
 
 const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSearch = "", businessId = null }) => {
   const [searchTerm, setSearchTerm] = useState(initialSearch);
@@ -49,8 +56,8 @@ const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSe
       try {
         // Fetch both businesses and users in parallel
         const [businessesResponse, usersResponse] = await Promise.all([
-          fetch('http://localhost:3000/api/businesses/'),
-          fetch('http://localhost:3000/api/users/getAllUsers')
+          apiCall('/businesses/'),
+          apiCall('/users/getAllUsers')
         ]);
         
         const businessesData = await businessesResponse.json();
@@ -62,26 +69,25 @@ const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSe
           userAccountTypes.set(user.email, user.accountType);
         });
         
+        // Get current user ID
+        const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+        const currentUserId = currentUser.id;
+        
         // Process and filter businesses
         const filteredBusinesses = businessesData.businesses
           .map((business: any) => ({
             ...business,
-            partnershipOffers: JSON.parse(business.partnershipOffers || '[]'),
-            sponsorshipOffers: JSON.parse(business.sponsorshipOffers || '[]'),
-            gallery: business.gallery ? JSON.parse(business.gallery) : [],
-            // Add the owner's account type
-            ownerAccountType: userAccountTypes.get(business.email) || userAccountTypes.get(business.owner?.email)
+            partnershipOffers: JSON.parse(business.partnership_offers || business.partnershipOffers || '[]'),
+            sponsorshipOffers: JSON.parse(business.sponsorship_offers || business.sponsorshipOffers || '[]'),
+            gallery: business.gallery ? JSON.parse(business.gallery) : []
           }))
           .filter((business: any) => {
-            // Match the platform type with the owner's account type
-            const matchesAccountType = business.ownerAccountType === platformType;
-            
-            // Check if the business has relevant offers
-            const hasOffers = platformType === 'partnership' 
-              ? business.partnershipOffers && business.partnershipOffers.length > 0
-              : business.sponsorshipOffers && business.sponsorshipOffers.length > 0;
-              
-            return matchesAccountType && hasOffers;
+            // Exclude current user's own business
+            if (business.owner_id === currentUserId || business.ownerId === currentUserId) {
+              return false;
+            }
+            // Show all other businesses
+            return true;
           });
         
         setBusinesses(filteredBusinesses);
@@ -127,7 +133,7 @@ const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSe
   // Businesses are already filtered by platformType, just filter by search term
   const filteredBusinesses = businesses.filter(business => {
     if (!searchTerm) return true;
-    
+    // https://supabase.com/dashboard/project/atztloqxduptfdtrylha/editor/17283?schema=public
     return business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (business.description && business.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (business.industry && business.industry.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -241,7 +247,7 @@ const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSe
                 <PaginationItem>
                   <PaginationPrevious 
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
                   />
                 </PaginationItem>
                 {Array.from({length: pageCount}).map((_, index) => (
@@ -257,7 +263,7 @@ const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSe
                 <PaginationItem>
                   <PaginationNext
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))}
-                    disabled={currentPage === pageCount}
+                    className={currentPage === pageCount ? 'pointer-events-none opacity-50' : ''}
                   />
                 </PaginationItem>
               </PaginationContent>

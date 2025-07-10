@@ -14,6 +14,7 @@ import { Navigate, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft } from "lucide-react";
 import emailjs from '@emailjs/browser';
+import { apiCall } from "@/config/api";
 
 const Auth = () => {
   const { user } = useAuth();
@@ -34,11 +35,8 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/users/login', {
+      const response = await apiCall('/users/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           email,
           password
@@ -97,11 +95,8 @@ const Auth = () => {
         accountType: "partnership",
       };
 
-      const response = await fetch("/api/users/register", {
+      const response = await apiCall("/users/register", {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify(signupData)
       });
 

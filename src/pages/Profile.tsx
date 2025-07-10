@@ -37,7 +37,7 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/landing/Navbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Loader2 } from "lucide-react";
-import axios from "axios";
+import { authenticatedApiCall } from "@/config/api";
 
 const formSchema = z.object({
   displayName: z.string().min(2, "Display name must be at least 2 characters"),
@@ -83,25 +83,26 @@ const Profile = () => {
     const fetchUserProfile = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('http://localhost:3000/api/users/profile', {
-          headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-          }
-        });
+        const response = await authenticatedApiCall('/users/profile');
         
-        const userData = response.data.user;
-        
-        // Update form with user data from API
-        form.reset({
-          displayName: userData.displayName || "",
-          bio: userData.bio || "",
-          website: userData.website || "",
-          industry: userData.industry || "",
-          interests: userData.interests || "",
-        });
-        
-        // Set profile image
-        setProfileImage(userData.avatarUrl || null);
+        if (response.ok) {
+          const data = await response.json();
+          const userData = data.user;
+          
+          // Update form with user data from API
+          form.reset({
+            displayName: userData.display_name || "",
+            bio: userData.bio || "",
+            website: userData.website || "",
+            industry: userData.industry || "",
+            interests: userData.interests || "",
+          });
+          
+          // Set profile image
+          setProfileImage(userData.avatar_url || null);
+        } else {
+          throw new Error('Failed to fetch profile');
+        }
       } catch (error) {
         console.error("Error fetching user profile:", error);
         toast({
@@ -129,11 +130,21 @@ const Profile = () => {
         avatarUrl: profileImage
       };
       
-      await axios.put('http://localhost:3000/api/users/profile', updateData, {
+      console.log('Sending update data:', updateData);
+      
+      const response = await authenticatedApiCall('/users/profile', {
+        method: 'PUT',
+        body: JSON.stringify(updateData),
         headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+          'Content-Type': 'application/json'
         }
       });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Profile update failed:', response.status, errorData);
+        throw new Error(`Server error: ${response.status}`);
+      }
       
       toast({
         title: "Profile updated",
@@ -171,25 +182,38 @@ const Profile = () => {
     
     try {
       // Upload image to Cloudinary via backend
-      const uploadResponse = await axios.post('http://localhost:3000/api/uploads', formData, {
+      const uploadResponse = await authenticatedApiCall('/uploads', {
+        method: 'POST',
+        body: formData,
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+          // Remove Content-Type to let browser set it for FormData
         }
       });
       
-      const imageUrl = uploadResponse.data.data.imageUrl;
-      console.log(imageUrl);
-      setProfileImage(imageUrl);
-      
-      // Immediately update user profile with new avatar URL
-      await axios.put('http://localhost:3000/api/users/profile', {
-        avatarUrl: imageUrl
-      }, {
-        headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+      if (uploadResponse.ok) {
+        const uploadData = await uploadResponse.json();
+        const imageUrl = uploadData.data.imageUrl;
+        console.log(imageUrl);
+        setProfileImage(imageUrl);
+        
+        // Immediately update user profile with new avatar URL
+        const profileResponse = await authenticatedApiCall('/users/profile', {
+          method: 'PUT',
+          body: JSON.stringify({
+            avatarUrl: imageUrl
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!profileResponse.ok) {
+          const errorData = await profileResponse.text();
+          console.error('Avatar update failed:', profileResponse.status, errorData);
         }
-      });
+      } else {
+        throw new Error('Upload failed');
+      }
       
       toast({
         title: "Image uploaded", 
@@ -199,7 +223,7 @@ const Profile = () => {
       console.error('Upload error:', error);
       toast({
         title: "Upload failed",
-        description: error.response?.data?.message || "Failed to upload image. Please try again.",
+        description: "Failed to upload image. Please try again.",
         variant: "destructive",
       });
     } finally {

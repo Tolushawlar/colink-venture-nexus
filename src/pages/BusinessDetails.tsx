@@ -24,7 +24,7 @@ import {
   Phone,
   MapPin,
   FileText,
-  Share2,
+  Copy,
   Building,
   Loader2
 } from "lucide-react";
@@ -32,6 +32,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Business } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { apiCall } from "@/config/api";
 
 
 const BusinessDetails = () => {
@@ -85,7 +86,7 @@ const BusinessDetails = () => {
       
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost:3000/api/businesses/${id}`);
+        const response = await apiCall(`/businesses/${id}`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch business details: ${response.status}`);
@@ -110,15 +111,22 @@ const BusinessDetails = () => {
     const fetchUserPosts = async (ownerId) => {
       setLoadingPosts(true);
       try {
-        const response = await fetch('http://localhost:3000/api/posts');
+        const response = await apiCall('/posts');
         
         if (!response.ok) {
           throw new Error(`Failed to fetch posts: ${response.status}`);
         }
         
         const data = await response.json();
-        // Filter posts by owner ID
-        const filteredPosts = data.posts.filter(post => post.userId === ownerId);
+        // Filter posts by owner ID and map field names
+        const filteredPosts = data.posts
+          .filter(post => post.user_id === ownerId)
+          .map(post => ({
+            ...post,
+            id: post.id || `post-${Date.now()}-${Math.random()}`,
+            createdAt: post.created_at,
+            userId: post.user_id
+          }));
         setPosts(filteredPosts || []);
       } catch (err) {
         console.error("Error fetching posts:", err);
@@ -156,11 +164,8 @@ const BusinessDetails = () => {
     setSendingEmail(true);
     
     try {
-      const response = await fetch("http://localhost:3000/api/send-email", {
+      const response = await apiCall("/send-email", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify({
           recipientEmail: business.business.owner.email,
           senderName: contactForm.name,
@@ -202,26 +207,38 @@ const BusinessDetails = () => {
   };
 
   let parsedPartnershipOffers = [];
+  let parsedSponsorshipOffers = [];
+  
   try {
-    if (business?.business?.partnershipOffers) {
-      parsedPartnershipOffers = JSON.parse(business.business.partnershipOffers);
-      // Ensure it's an array after parsing, sometimes it could be null or another type if the string is "null"
-      if (!Array.isArray(parsedPartnershipOffers)) {
-        parsedPartnershipOffers = [];
+    // Handle both string and array formats
+    const partnershipData = business?.business?.partnership_offers || business?.business?.partnershipOffers;
+    if (partnershipData) {
+      if (typeof partnershipData === 'string') {
+        parsedPartnershipOffers = JSON.parse(partnershipData);
+      } else if (Array.isArray(partnershipData)) {
+        parsedPartnershipOffers = partnershipData;
       }
+    }
+    if (!Array.isArray(parsedPartnershipOffers)) {
+      parsedPartnershipOffers = [];
     }
   } catch (e) {
     console.error("Failed to parse partnershipOffers:", e);
-    parsedPartnershipOffers = []; // Default to empty array on error
+    parsedPartnershipOffers = [];
   }
 
-  let parsedSponsorshipOffers = [];
   try {
-    if (business?.business?.sponsorshipOffers) {
-      parsedSponsorshipOffers = JSON.parse(business.business.sponsorshipOffers);
-      if (!Array.isArray(parsedSponsorshipOffers)) {
-        parsedSponsorshipOffers = [];
+    // Handle both string and array formats
+    const sponsorshipData = business?.business?.sponsorship_offers || business?.business?.sponsorshipOffers;
+    if (sponsorshipData) {
+      if (typeof sponsorshipData === 'string') {
+        parsedSponsorshipOffers = JSON.parse(sponsorshipData);
+      } else if (Array.isArray(sponsorshipData)) {
+        parsedSponsorshipOffers = sponsorshipData;
       }
+    }
+    if (!Array.isArray(parsedSponsorshipOffers)) {
+      parsedSponsorshipOffers = [];
     }
   } catch (e) {
     console.error("Failed to parse sponsorshipOffers:", e);
@@ -229,7 +246,13 @@ const BusinessDetails = () => {
   }
 
   const handleChat = () => {
-    navigate('/chats');
+    // Navigate to chats with business owner ID as parameter
+    const ownerId = business?.business?.owner?.id || business?.business?.ownerId;
+    if (ownerId) {
+      navigate(`/chats?userId=${ownerId}`);
+    } else {
+      navigate('/chats');
+    }
 
     toast({
       title: "Chat Started",
@@ -238,12 +261,16 @@ const BusinessDetails = () => {
   };
 
   const handleScheduleAppointment = () => {
-    navigate('/appointments');
-
-    toast({
-      title: "Appointment Scheduled",
-      description: `Your appointment with ${business?.business?.name || "this business"} has been scheduled.`,
-    });
+    // Navigate to appointments with business info as parameters
+    const businessEmail = business?.business?.email || business?.business?.owner?.email;
+    const businessName = business?.business?.name;
+    
+    const params = new URLSearchParams();
+    if (businessEmail) params.set('attendeeEmail', businessEmail);
+    if (businessName) params.set('attendeeName', businessName);
+    params.set('openModal', 'true');
+    
+    navigate(`/appointments?${params.toString()}`);
   };
 
   if (loading) {
@@ -286,18 +313,34 @@ const BusinessDetails = () => {
               <p className="mt-3 text-gray-700">{business.business.description}</p>
             </div>
             <div className="flex flex-col md:flex-row gap-3 mt-4 md:mt-0">
-              {/* <Button onClick={handleContact}>
-                <Mail className="mr-2 h-4 w-4" />
-                Contact
-              </Button> */}
-              <Button  onClick={handleChat}>
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Chat
-              </Button>
-              <Button variant="secondary" onClick={handleScheduleAppointment}>
-                <Calendar className="mr-2 h-4 w-4" />
-                Schedule
-              </Button>
+              {/* Check if this is the current user's own business */}
+              {(() => {
+                const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+                const currentUserId = currentUser.id;
+                const businessOwnerId = business?.business?.owner_id || business?.business?.ownerId;
+                const isOwnBusiness = businessOwnerId === currentUserId;
+                
+                return (
+                  <>
+                    <Button 
+                      onClick={handleChat}
+                      disabled={isOwnBusiness}
+                      variant={isOwnBusiness ? "outline" : "default"}
+                    >
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      {isOwnBusiness ? "Your Business" : "Chat"}
+                    </Button>
+                    <Button 
+                      variant="secondary" 
+                      onClick={handleScheduleAppointment}
+                      disabled={isOwnBusiness}
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Schedule
+                    </Button>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -365,9 +408,9 @@ const BusinessDetails = () => {
                       {parsedPartnershipOffers.map((offer, index) => (
                         <li key={index} className="bg-gray-50 p-4 rounded-lg">
                           <div className="font-medium">{offer}</div>
-                          <p className="text-gray-600 text-sm mt-1">
+                          {/* <p className="text-gray-600 text-sm mt-1">
                             Contact us to explore this partnership opportunity.
-                          </p>
+                          </p> */}
                           {/* <Button size="sm" className="mt-2" onClick={handleContact}>
                             Learn More
                           </Button> */}
@@ -386,9 +429,9 @@ const BusinessDetails = () => {
                       {parsedSponsorshipOffers.map((offer, index) => (
                         <li key={index} className="bg-gray-50 p-4 rounded-lg">
                           <div className="font-medium">{offer}</div>
-                          <p className="text-gray-600 text-sm mt-1">
+                          {/* <p className="text-gray-600 text-sm mt-1">
                             Contact us to learn more about this sponsorship opportunity.
-                          </p>
+                          </p> */}
                           {/* <Button size="sm" className="mt-2" onClick={handleContact}>
                             Learn More
                           </Button> */}
@@ -467,13 +510,28 @@ const BusinessDetails = () => {
                         </div>
                         <p className="mt-3">{post.content}</p>
                         <div className="flex gap-2 mt-3">
-                          <Button variant="ghost" size="sm">
-                            <Share2 className="h-4 w-4 mr-1" />
-                            Share
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={handleContact}>
-                            <MessageSquare className="h-4 w-4 mr-1" />
-                            Comment
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={async () => {
+                              const postText = `${post.title}\n\n${post.content}`;
+                              try {
+                                await navigator.clipboard.writeText(postText);
+                                toast({
+                                  title: "Copied!",
+                                  description: "Post content copied to clipboard.",
+                                });
+                              } catch (error) {
+                                toast({
+                                  title: "Copy failed",
+                                  description: "Unable to copy to clipboard.",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            <Copy className="h-4 w-4 mr-1" />
+                            Copy Post
                           </Button>
                         </div>
                       </div>
@@ -533,7 +591,7 @@ const BusinessDetails = () => {
                   </div>
                 </div>
 
-                <div className="mt-6">
+                {/* <div className="mt-6">
                   <h3 className="font-medium mb-3">Send a Message</h3>
                   <form onSubmit={handleContact} className="space-y-3">
                     <Input 
@@ -581,7 +639,7 @@ const BusinessDetails = () => {
                       )}
                     </Button>
                   </form>
-                </div>
+                </div> */}
               </CardContent>
             </Card>
           </TabsContent>

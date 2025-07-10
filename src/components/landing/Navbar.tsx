@@ -13,6 +13,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { authenticatedApiCall } from "@/config/api";
 
 const mainNavItems: NavItem[] = [
   {
@@ -63,11 +64,7 @@ const Navbar = () => {
         const token = sessionStorage.getItem('token');
         if (!token || !user) return;
         
-        const response = await fetch('http://localhost:3000/api/users/profile', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await authenticatedApiCall('/users/profile');
         
         if (response.ok) {
           const data = await response.json();

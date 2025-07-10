@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { apiCall } from "@/config/api";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ const Index = () => {
       
       setIsLoading(true);
       try {
-        const response = await fetch('http://localhost:3000/api/businesses/');
+        const response = await apiCall('/businesses/');
         const data = await response.json();
         
         const filtered = data.businesses.filter(business => 
@@ -106,7 +107,7 @@ const Index = () => {
                         />
                       </div>
                     </PopoverTrigger>
-                    <PopoverContent className="p-0 w-[calc(100%-2rem)] max-w-xl" align="start">
+                    <PopoverContent className="p-0 w-[600px] max-w-2xl" align="start">
                       <Command>
                         <CommandList>
                           <CommandEmpty>{isLoading ? 'Loading...' : 'No results found.'}</CommandEmpty>

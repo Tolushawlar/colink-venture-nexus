@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -22,17 +23,16 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Calendar,
-  MessageSquare,
-  Heart,
-  Share2,
   Plus,
   Image,
   FileText,
   Trash2,
-  Loader2
+  Loader2,
+  Copy
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { authenticatedApiCall } from "@/config/api";
 
 // Mock posts data
 const mockPosts = [
@@ -70,6 +70,7 @@ const Posts = () => {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [businessLogo, setBusinessLogo] = useState<string | null>(null);
   const [showNewPostForm, setShowNewPostForm] = useState(false);
   const [newPost, setNewPost] = useState({
     title: "",
@@ -87,11 +88,7 @@ const Posts = () => {
     const fetchPosts = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:3000/api/posts', {
-          headers: {
-            'Authorization': `Bearer ${getAuthToken()}`
-          }
-        });
+        const response = await authenticatedApiCall('/posts');
         
         if (!response.ok) {
           throw new Error('Failed to fetch posts');
@@ -119,9 +116,32 @@ const Posts = () => {
           }
         }
         
-        // Filter posts by user ID
-        const userPosts = data.posts.filter(post => post.userId === userId);
+        // Filter posts by user ID and map field names
+        const userPosts = data.posts
+          .filter(post => post.user_id === userId)
+          .map(post => ({
+            ...post,
+            id: post.id || `post-${Date.now()}-${Math.random()}`,
+            createdAt: post.created_at,
+            userId: post.user_id
+          }));
         setPosts(userPosts);
+        
+        // Fetch business logo for current user
+        try {
+          const businessResponse = await authenticatedApiCall('/businesses/');
+          if (businessResponse.ok) {
+            const businessData = await businessResponse.json();
+            const userBusiness = businessData.businesses.find((business: any) => 
+              business.owner_id === userId || business.ownerId === userId
+            );
+            if (userBusiness?.logo) {
+              setBusinessLogo(userBusiness.logo);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching business logo:', error);
+        }
       } catch (error) {
         console.error('Error fetching posts:', error);
         toast({
@@ -149,28 +169,52 @@ const Posts = () => {
     }
 
     try {
+      console.log('Creating post with data:', {
+        title: newPost.title,
+        content: newPost.content,
+        type: newPost.type
+      });
+      
       // Add authorization header to fetch request
-      const response = await fetch('http://localhost:3000/api/posts', {
+      const response = await authenticatedApiCall('/posts', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getAuthToken()}`
-        },
         body: JSON.stringify({
           title: newPost.title,
           content: newPost.content,
           type: newPost.type
         }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
+      console.log('Post creation response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to create post');
+        const errorText = await response.text();
+        console.error('Post creation failed:', response.status, errorText);
+        throw new Error(`Failed to create post: ${response.status}`);
       }
 
-      const createdPost = await response.json();
+      const responseData = await response.json();
+      console.log('Post created successfully:', responseData);
 
-      // Add post to the list
-      setPosts([createdPost, ...posts]);
+      // Handle different response structures
+      const createdPost = responseData.post || responseData;
+      
+      // Add post to the list with proper field mapping
+      const formattedPost = {
+        id: createdPost.id || `post-${Date.now()}`,
+        title: newPost.title,
+        content: newPost.content,
+        type: newPost.type,
+        createdAt: createdPost.created_at || new Date().toISOString(),
+        userId: createdPost.user_id,
+        likes: 0,
+        comments: 0
+      };
+      
+      setPosts(prevPosts => [formattedPost, ...prevPosts]);
 
       // Show success toast
       toast({
@@ -195,15 +239,34 @@ const Posts = () => {
     }
   };
 
-  const handleDeletePost = (postId: string) => {
-    // Delete post
-    setPosts(posts.filter(post => post.id !== postId));
-
-    // Show success toast
-    toast({
-      title: "Post Deleted",
-      description: "Your post has been deleted.",
-    });
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const response = await authenticatedApiCall(`/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        // Remove post from local state
+        setPosts(posts.filter(post => post.id !== postId));
+        
+        toast({
+          title: "Post Deleted",
+          description: "Your post has been deleted.",
+        });
+      } else {
+        throw new Error('Failed to delete post');
+      }
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete post. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatDate = (timestamp: string) => {
@@ -220,6 +283,24 @@ const Posts = () => {
         return "Latest Update";
       default:
         return type;
+    }
+  };
+
+  const handleCopyPost = async (post: any) => {
+    const postText = `${post.title}\n\n${post.content}`;
+    
+    try {
+      await navigator.clipboard.writeText(postText);
+      toast({
+        title: "Copied!",
+        description: "Post content copied to clipboard.",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy to clipboard.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -276,16 +357,62 @@ const Posts = () => {
                 <label className="block text-sm font-medium mb-2" htmlFor="post-content">
                   Post Content
                 </label>
-                <Textarea
-                  id="post-content"
-                  placeholder="Write your post content..."
-                  className="min-h-32"
-                  value={newPost.content}
-                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                />
+                <div className="border rounded-md">
+                  <div className="p-2 border-b bg-gray-50 flex gap-2">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        const selection = window.getSelection();
+                        if (selection && selection.rangeCount > 0) {
+                          const range = selection.getRangeAt(0);
+                          const bold = document.createElement('strong');
+                          try {
+                            range.surroundContents(bold);
+                          } catch (e) {
+                            bold.appendChild(range.extractContents());
+                            range.insertNode(bold);
+                          }
+                        }
+                      }}
+                    >
+                      <strong>B</strong>
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        const selection = window.getSelection();
+                        if (selection && selection.rangeCount > 0) {
+                          const range = selection.getRangeAt(0);
+                          const italic = document.createElement('em');
+                          try {
+                            range.surroundContents(italic);
+                          } catch (e) {
+                            italic.appendChild(range.extractContents());
+                            range.insertNode(italic);
+                          }
+                        }
+                      }}
+                    >
+                      <em>I</em>
+                    </Button>
+                  </div>
+                  <div
+                    contentEditable
+                    className="p-3 min-h-32 focus:outline-none"
+                    onInput={(e) => {
+                      const content = e.currentTarget.innerHTML;
+                      setNewPost({ ...newPost, content });
+                    }}
+                    dangerouslySetInnerHTML={{ __html: newPost.content }}
+                  />
+                </div>
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium mb-2">
                   Add Media (Optional)
                 </label>
@@ -299,7 +426,7 @@ const Posts = () => {
                     Add Document
                   </Button>
                 </div>
-              </div>
+              </div> */}
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button variant="outline" onClick={() => setShowNewPostForm(false)}>
@@ -333,7 +460,7 @@ const Posts = () => {
                       </div>
                     </div>
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={post.user?.avatarUrl || user?.user_metadata?.avatarUrl} />
+                      <AvatarImage src={businessLogo || post.user?.avatarUrl || user?.user_metadata?.avatarUrl} />
                       <AvatarFallback>
                         {(post.user?.displayName || user?.user_metadata?.displayName || "")?.substring(0, 2) || 
                          (post.user?.email || user?.email || "")?.substring(0, 2) || "U"}
@@ -345,20 +472,15 @@ const Posts = () => {
                   <p className="text-sm">{post.content}</p>
                 </CardContent>
                 <CardFooter className="border-t pt-4 flex justify-between">
-                  <div className="flex space-x-4">
-                    <Button variant="ghost" size="sm" className="text-gray-600">
-                      <Heart className="mr-1 h-4 w-4" />
-                      <span>{post.likes}</span>
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-gray-600">
-                      <MessageSquare className="mr-1 h-4 w-4" />
-                      <span>{post.comments}</span>
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-gray-600">
-                      <Share2 className="mr-1 h-4 w-4" />
-                      <span>Share</span>
-                    </Button>
-                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-blue-600 hover:text-blue-700"
+                    onClick={() => handleCopyPost(post)}
+                  >
+                    <Copy className="mr-1 h-4 w-4" />
+                    <span>Copy Post</span>
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"

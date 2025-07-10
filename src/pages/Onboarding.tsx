@@ -37,7 +37,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AccountType } from "@/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Upload, X, Loader2 } from "lucide-react";
-import axios from "axios";
+import { authenticatedApiCall } from "@/config/api";
 
 const formSchema = z.object({
   accountType: z.enum(["partnership", "sponsorship"] as const),
@@ -141,29 +141,45 @@ const Onboarding = () => {
       };
 
       try {
+        console.log('Creating business with payload:', businessPayload);
+        
         // Call business API to create a new business entry
-        const response = await fetch('http://localhost:3000/api/businesses', {
+        const response = await authenticatedApiCall('/businesses', {
           method: 'POST',
+          body: JSON.stringify(businessPayload),
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-          },
-          body: JSON.stringify(businessPayload)
+            'Content-Type': 'application/json'
+          }
         });
 
+        console.log('Business API response status:', response.status);
+
         if (!response.ok) {
-          // If the response is not OK, throw an error with the status
-          const errorData = await response.json();
-          console.warn("Business API error:", errorData);
-          // Continue with navigation even if business API fails
+          const errorText = await response.text();
+          console.error("Business API error:", response.status, errorText);
+          
+          toast({
+            title: "Warning",
+            description: "Profile created but business details may not have been saved completely.",
+            variant: "destructive"
+          });
         } else {
-          // Optionally, handle success response from the business API
           const businessData = await response.json();
-          console.log('Business profile created:', businessData);
+          console.log('Business profile created successfully:', businessData);
+          
+          toast({
+            title: "Success",
+            description: "Business profile created successfully!",
+          });
         }
       } catch (apiError) {
-        console.warn("Business API error:", apiError);
-        // Continue with navigation even if business API fails
+        console.error("Business API error:", apiError);
+        
+        toast({
+          title: "Warning",
+          description: "Profile created but business details may not have been saved.",
+          variant: "destructive"
+        });
       }
 
       // Success toast
@@ -214,14 +230,14 @@ const Onboarding = () => {
     
     try {
       // Upload image to Cloudinary via backend
-      const response = await axios.post('http://localhost:3000/api/uploads', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        }
+      const response = await authenticatedApiCall('/uploads', {
+        method: 'POST',
+        body: formData,
+        headers: {}
       });
       
-      const imageUrl = response.data.data.imageUrl;
+      const data = await response.json();
+      const imageUrl = data.data.imageUrl;
       console.log("Image uploaded successfully:", imageUrl);
       setProfileImage(imageUrl);
       
@@ -233,7 +249,7 @@ const Onboarding = () => {
       console.error('Upload error:', error);
       toast({
         title: "Upload failed",
-        description: error.response?.data?.message || "Failed to upload image. Please try again.",
+        description: "Failed to upload image. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -255,14 +271,14 @@ const Onboarding = () => {
         const formData = new FormData();
         formData.append('image', file);
         
-        const response = await axios.post('http://localhost:3000/api/uploads', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-          }
+        const response = await authenticatedApiCall('/uploads', {
+          method: 'POST',
+          body: formData,
+          headers: {}
         });
         
-        const imageUrl = response.data.data.imageUrl;
+        const data = await response.json();
+        const imageUrl = data.data.imageUrl;
         console.log(imageUrl);
         uploadedUrls.push(imageUrl);
       }
@@ -278,7 +294,7 @@ const Onboarding = () => {
       console.error('Gallery upload error:', error);
       toast({
         title: "Upload failed",
-        description: error.response?.data?.message || "Failed to upload gallery images. Please try again.",
+        description: "Failed to upload gallery images. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -655,8 +671,33 @@ const Onboarding = () => {
                     nextStep();
                   }}>Continue</Button>
                 ) : (
-                  <Button type="submit">Complete Setup</Button>
+                  <Button 
+                    type="button" 
+                    onClick={async () => {
+                      console.log('Complete Setup clicked');
+                      console.log('Form values:', form.getValues());
+                      console.log('Form errors:', form.formState.errors);
+                      
+                      const isValid = await form.trigger();
+                      console.log('Form is valid:', isValid);
+                      
+                      if (isValid) {
+                        const values = form.getValues();
+                        await handleSubmit(values);
+                      } else {
+                        console.log('Form validation failed');
+                        toast({
+                          title: "Validation Error",
+                          description: "Please check all fields, and fill in all required fields.",
+                          variant: "destructive"
+                        });
+                      }
+                    }}
+                  >
+                    Complete Setup
+                  </Button>
                 )}
+
               </CardFooter>
             </form>
           </Form>

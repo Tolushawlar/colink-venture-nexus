@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import axios from "axios";
+import { authenticatedApiCall } from "@/config/api";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -53,14 +53,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         const token = sessionStorage.getItem('token');
         if (!token) return;
         
-        const response = await axios.get('http://localhost:3000/api/users/profile', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await authenticatedApiCall('/users/profile');
         
-        if (response.data.user?.avatarUrl) {
-          setAvatarUrl(response.data.user.avatarUrl);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user?.avatar_url) {
+            setAvatarUrl(data.user.avatar_url);
+          }
         }
       } catch (error) {
         console.error("Error fetching user avatar:", error);
@@ -129,7 +128,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </Avatar>
               <div className="flex flex-col">
                 <span className="font-medium text-sm">{user?.email}</span>
-                <span className="text-xs text-muted-foreground capitalize">{accountType.slice(1, -1)} Account</span>              </div>
+                <span className="text-xs text-muted-foreground capitalize">{accountType} Account</span>              </div>
             </div>
           </SidebarHeader>
           
