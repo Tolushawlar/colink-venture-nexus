@@ -107,22 +107,27 @@ const Onboarding = () => {
       });
 
       // Update user profile with the form values
-      await updateUserProfile({
-        accountType: values.accountType,
-        displayName: values.displayName,
-        bio: values.bio,
-        website: values.website,
-        industry: values.industry,
-        interests: values.interests,
-        businessName: values.businessName,
-        businessDescription: values.businessDescription,
-        services: values.services,
-        email: values.email,
-        phone: values.phone,
-        address: values.address,
-        avatarUrl: profileImage,
-        galleryImages: galleryImages
+      const profileResponse = await authenticatedApiCall('/users/profile', {
+        method: 'PUT',
+        body: JSON.stringify({
+          accountType: values.accountType,
+          displayName: values.displayName,
+          bio: values.bio,
+          website: values.website,
+          industry: values.industry,
+          interests: values.interests,
+          avatarUrl: profileImage
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+      
+      if (!profileResponse.ok) {
+        const errorText = await profileResponse.text();
+        console.error('Profile update failed:', errorText);
+        throw new Error('Failed to update profile');
+      }
 
       // Map form values to business API payload
       const businessPayload = {
@@ -144,7 +149,7 @@ const Onboarding = () => {
         console.log('Creating business with payload:', businessPayload);
         
         // Call business API to create a new business entry
-        const response = await authenticatedApiCall('/businesses', {
+        const response = await authenticatedApiCall('/businesses/', {
           method: 'POST',
           body: JSON.stringify(businessPayload),
           headers: {
