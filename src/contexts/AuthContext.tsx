@@ -79,17 +79,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Mark initial load as complete
         sessionStorage.setItem('initialLoadComplete', 'true');
 
-        // Skip auto-navigation for certain protected pages or if skipAutoNavigation flag is set
+        // Skip auto-navigation for certain protected pages, public pages, or if skipAutoNavigation flag is set
         const isProtectedPage = 
           location.pathname === '/profile' || 
           location.pathname.startsWith('/business/') || 
           location.pathname === '/appointments' || 
           location.pathname === '/chats' || 
           location.pathname === '/posts';
+          
+        // Define public pages that should be accessible even when logged in
+        const isPublicPage = 
+          location.pathname === '/' || 
+          location.pathname === '/about-us' || 
+          location.pathname === '/contact-us' || 
+          location.pathname === '/pricing' || 
+          location.pathname.includes('-info');
         
         const skipAutoNavigation = sessionStorage.getItem('skipAutoNavigation') === 'true';
         
-        if (!isProtectedPage && !skipAutoNavigation && location.pathname !== '/') {
+        // Only redirect if not on a protected page, not on a public page, and auto-navigation is not skipped
+        if (!isProtectedPage && !isPublicPage && !skipAutoNavigation) {
           const accountType = sessionStorage.getItem('accountType');
           // const accountType = sessionStorage.getItem('accountType')?.slice(1, -1);
           const onboarded = sessionStorage.getItem('onboarded');
@@ -127,12 +136,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuthData(null, null, false);
       
       // If not on a public page and not signed in, redirect to homepage
-      if (location.pathname !== '/' && 
-          location.pathname !== '/auth' && 
-          !location.pathname.includes('-info') && 
-          location.pathname !== '/about-us' && 
-          location.pathname !== '/contact-us' && 
-          location.pathname !== '/pricing') {
+      const isPublicPage = 
+        location.pathname === '/' || 
+        location.pathname === '/auth' || 
+        location.pathname.includes('-info') || 
+        location.pathname === '/about-us' || 
+        location.pathname === '/contact-us' || 
+        location.pathname === '/pricing';
+        
+      if (!isPublicPage) {
         navigate('/');
       }
     }

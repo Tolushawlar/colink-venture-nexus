@@ -12,7 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import emailjs from '@emailjs/browser';
 import { apiCall } from "@/config/api";
 
@@ -24,6 +24,12 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetCode, setResetCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetStep, setResetStep] = useState(1); // 1: email entry, 2: code verification, 3: new password
 
   // If already logged in, redirect to home page
   if (user) {
@@ -72,6 +78,95 @@ const Auth = () => {
         variant: "destructive",
         title: "An error occurred",
         description: error.message || "Something went wrong.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      if (resetStep === 1) {
+        // Generate a 6-digit code
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Store the code temporarily (in a real app, this would be stored server-side)
+        sessionStorage.setItem('resetCode', verificationCode);
+        sessionStorage.setItem('resetEmail', resetEmail);
+        
+        // Send verification code via email
+        const templateParams = {
+          email: resetEmail,
+          name: resetEmail.split('@')[0],
+          from_name: "CoLink Venture",
+          company_name: "CoLink Venture",
+          reset_code: verificationCode,
+          message: `You have requested a password change\n\nWe received a request to reset the password for your account. Your verification code is:\n\n${verificationCode}\n\nThis code will expire in one hour.\n\nIf you didn't request this password reset, please ignore this email or let us know immediately. Your account remains secure.\n\nBest regards,\nCoLink Venture Team`
+        };
+
+        await emailjs.send('service_lg2k11c', 'template_kryjiil', templateParams, '1mdOzw4v6z97Xfr0i');
+        
+        toast({
+          title: "Code Sent",
+          description: "A verification code has been sent to your email."
+        });
+        
+        setResetStep(2);
+      } else if (resetStep === 2) {
+        // Verify the code
+        const storedCode = sessionStorage.getItem('resetCode');
+        if (resetCode === storedCode) {
+          setResetStep(3);
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Invalid Code",
+            description: "The verification code is incorrect."
+          });
+        }
+      } else if (resetStep === 3) {
+        // Reset password
+        const response = await apiCall('/users/reset-password', {
+          method: 'POST',
+          body: JSON.stringify({
+            email: resetEmail,
+            newPassword: newPassword
+          })
+        });
+
+        if (response.ok) {
+          toast({
+            title: "Password Reset",
+            description: "Your password has been reset successfully."
+          });
+          
+          // Clean up
+          sessionStorage.removeItem('resetCode');
+          sessionStorage.removeItem('resetEmail');
+          
+          // Return to sign in
+          setShowForgotPassword(false);
+          setResetStep(1);
+          setResetEmail("");
+          setResetCode("");
+          setNewPassword("");
+        } else {
+          const data = await response.json();
+          toast({
+            variant: "destructive",
+            title: "Password Reset Failed",
+            description: data.message || "Failed to reset password"
+          });
+        }
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "An error occurred",
+        description: error.message || "Something went wrong."
       });
     } finally {
       setLoading(false);
@@ -198,14 +293,36 @@ const Auth = () => {
                     <label htmlFor="signin-password" className="text-sm font-medium">
                       Password
                     </label>
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="signin-password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <Button 
+                      type="button" 
+                      variant="link" 
+                      className="p-0 h-auto text-sm text-blue-600" 
+                      onClick={() => {
+                        setShowForgotPassword(true);
+                        setResetEmail(email);
+                      }}
+                    >
+                      Forgot Password?
+                    </Button>
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Signing in..." : "Sign In"}
@@ -242,14 +359,23 @@ const Auth = () => {
                     <label htmlFor="signup-password" className="text-sm font-medium">
                       Password
                     </label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="signup-password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
                     <p className="text-xs text-gray-500">
                       Password must be at least 6 characters.
                     </p>
@@ -265,6 +391,101 @@ const Auth = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* Forgot Password Modal */}
+        {showForgotPassword && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle>Reset Password</CardTitle>
+                <CardDescription>
+                  {resetStep === 1 && "Enter your email to receive a verification code"}
+                  {resetStep === 2 && "Enter the verification code sent to your email"}
+                  {resetStep === 3 && "Enter your new password"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  {resetStep === 1 && (
+                    <div className="space-y-2">
+                      <label htmlFor="reset-email" className="text-sm font-medium">
+                        Email
+                      </label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        placeholder="name@example.com"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
+                  
+                  {resetStep === 2 && (
+                    <div className="space-y-2">
+                      <label htmlFor="reset-code" className="text-sm font-medium">
+                        Verification Code
+                      </label>
+                      <Input
+                        id="reset-code"
+                        type="text"
+                        placeholder="Enter 6-digit code"
+                        value={resetCode}
+                        onChange={(e) => setResetCode(e.target.value)}
+                        required
+                      />
+                    </div>
+                  )}
+                  
+                  {resetStep === 3 && (
+                    <div className="space-y-2">
+                      <label htmlFor="new-password" className="text-sm font-medium">
+                        New Password
+                      </label>
+                      <div className="relative">
+                        <Input
+                          id="new-password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Password must be at least 6 characters.
+                      </p>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between pt-2">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => {
+                        setShowForgotPassword(false);
+                        setResetStep(1);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={loading}>
+                      {loading ? "Processing..." : resetStep === 1 ? "Send Code" : resetStep === 2 ? "Verify Code" : "Reset Password"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

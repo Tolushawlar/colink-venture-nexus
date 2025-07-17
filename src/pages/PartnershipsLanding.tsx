@@ -27,9 +27,9 @@ const PartnershipCard = ({ title, description, icon, iconBgColor }: PartnershipC
       <p className="text-gray-600">{description}</p>
     </CardContent>
     <CardFooter>
-      <Button variant="outline" className="w-full" asChild>
+      {/* <Button variant="outline" className="w-full" asChild>
         <Link to="/auth">Learn More</Link>
-      </Button>
+      </Button> */}
     </CardFooter>
   </Card>
 );

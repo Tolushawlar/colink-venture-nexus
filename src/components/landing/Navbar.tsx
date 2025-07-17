@@ -26,7 +26,7 @@ const mainNavItems: NavItem[] = [
   },
   {
     title: "Solutions",
-    href: "#solutions",
+    href: "/#solutions",
   },
   {
     title: "Pricing",
@@ -124,23 +124,13 @@ const Navbar = () => {
           </Link>
           <nav className="hidden md:flex items-center gap-6">
             {mainNavItems.map((item, index) => (
-              item.href.startsWith("#") ? (
-                <a
-                  key={index}
-                  href={item.href}
-                  className="text-sm font-medium text-gray-600 hover:text-colink-teal transition-colors"
-                >
-                  {item.title}
-                </a>
-              ) : (
-                <Link
-                  key={index}
-                  to={item.href}
-                  className="text-sm font-medium text-gray-600 hover:text-colink-teal transition-colors"
-                >
-                  {item.title}
-                </Link>
-              )
+              <Link
+                key={index}
+                to={item.href}
+                className="text-sm font-medium text-gray-600 hover:text-colink-teal transition-colors"
+              >
+                {item.title}
+              </Link>
             ))}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -227,25 +217,14 @@ const Navbar = () => {
         <div className="container md:hidden py-4">
           <nav className="flex flex-col gap-4">
             {mainNavItems.map((item, index) => (
-              item.href.startsWith("#") ? (
-                <a
-                  key={index}
-                  href={item.href}
-                  className="text-base font-medium hover:text-colink-teal transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.title}
-                </a>
-              ) : (
-                <Link
-                  key={index}
-                  to={item.href}
-                  className="text-base font-medium hover:text-colink-teal transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.title}
-                </Link>
-              )
+              <Link
+                key={index}
+                to={item.href}
+                className="text-base font-medium hover:text-colink-teal transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                {item.title}
+              </Link>
             ))}
             <div className="py-2">
               <p className="text-sm font-medium text-gray-500 mb-2">Platforms</p>

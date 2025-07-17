@@ -40,9 +40,9 @@ const SponsorshipOption = ({ number, title, description, icon, imageSrc, alt, re
         <div>
           <h3 className="text-2xl font-bold text-colink-navy mb-4">{title}</h3>
           <p className="text-gray-600">{description}</p>
-          <Button className="mt-6" variant="outline" asChild>
+          {/* <Button className="mt-6" variant="outline" asChild>
             <Link to="/auth">Learn More</Link>
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>
