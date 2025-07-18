@@ -37,13 +37,13 @@ const BusinessSlider = () => {
               id: business.id,
               name: business.name,
               description: business.description,
-              logo: business.logo || "https://via.placeholder.com/150",
+              logo: business.logo,
               industry: business.industry,
               partnershipOffers: JSON.parse(business.partnership_offers || business.partnershipOffers || '[]'),
               sponsorshipOffers: JSON.parse(business.sponsorship_offers || business.sponsorshipOffers || '[]'),
               accountType: userAccountTypes.get(business.email) || "partnership"
             }))
-            .filter((business: any) => business.name && business.logo);
+            .filter((business: any) => business.name && business.logo && business.logo.trim() !== '');
           
           // Get featured businesses (limit to 6)
           setBusinesses(processedBusinesses.slice(0, 6));

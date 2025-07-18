@@ -211,11 +211,17 @@ const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSe
                       <CardDescription>{business.industry}</CardDescription>
                     </div>
                     <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
-                      <img 
-                        src={business.logo || "https://via.placeholder.com/150"} 
-                        alt={business.name} 
-                        className="max-w-full max-h-full object-contain" 
-                      />
+                      {business.logo ? (
+                        <img 
+                          src={business.logo} 
+                          alt={business.name} 
+                          className="max-w-full max-h-full object-contain" 
+                        />
+                      ) : (
+                        <div className="text-lg font-semibold text-gray-500">
+                          {business.name.split(' ').map(word => word[0]).join('').substring(0, 2).toUpperCase()}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardHeader>
