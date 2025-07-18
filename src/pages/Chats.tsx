@@ -3,10 +3,12 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send, Loader2, Users, MessageCircle } from "lucide-react";
+import { Send, Loader2, Users, MessageCircle, ArrowLeft } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { authenticatedApiCall, apiCall } from "@/config/api";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 interface Message {
   id: string;
@@ -49,6 +51,8 @@ const Chats = () => {
   const [loading, setLoading] = useState(true);
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [businessLoading, setBusinessLoading] = useState(false);
+  const isMobile = useIsMobile();
+  const [showChatList, setShowChatList] = useState(true);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -272,6 +276,11 @@ const Chats = () => {
         if (chatsResponse.ok) {
           const data = await chatsResponse.json();
           setChats(data.data.messagesByUser);
+          
+          // On mobile, switch to chat view after sending a message
+          if (isMobile) {
+            setShowChatList(false);
+          }
         }
       } else {
         throw new Error('Failed to send message');
@@ -317,6 +326,11 @@ const Chats = () => {
         title: "Chat Opened",
         description: `Continue your conversation with ${business.name}.`,
       });
+      
+      // On mobile, switch to chat view
+      if (isMobile) {
+        setShowChatList(false);
+      }
       return;
     }
     
@@ -339,6 +353,11 @@ const Chats = () => {
     }));
     
     setSelectedUserId(ownerId);
+    
+    // On mobile, switch to chat view
+    if (isMobile) {
+      setShowChatList(false);
+    }
     
     toast({
       title: "Chat Started",
@@ -375,180 +394,268 @@ const Chats = () => {
       <div className="space-y-6">
         <h1 className="text-3xl font-bold">Chats</h1>
         
-        <div className="flex h-[calc(100vh-200px)] overflow-hidden rounded-lg border">
-          {/* Chat list sidebar */}
-          <div className="w-1/3 border-r bg-white">
-            <Tabs defaultValue="chats" className="h-full flex flex-col">
-              <TabsList className="grid w-full grid-cols-2 m-2">
-                <TabsTrigger value="chats" className="flex items-center gap-2">
-                  <MessageCircle className="h-4 w-4" />
-                  Chats
-                </TabsTrigger>
-                <TabsTrigger value="directory" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Directory
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="chats" className="flex-1 overflow-hidden">
-                <div className="p-4 border-b">
-                  <h2 className="font-semibold">Recent Conversations</h2>
-                </div>
-                <div className="overflow-y-auto h-full">
-                  {chatEntries.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500">
-                      No conversations yet
-                    </div>
-                  ) : (
-                    chatEntries.map(([userId, chatData]) => (
-                      <div
-                        key={userId}
-                        className={`flex items-center p-4 border-b cursor-pointer hover:bg-gray-50 ${
-                          selectedUserId === userId ? 'bg-gray-100' : ''
-                        }`}
-                        onClick={() => setSelectedUserId(userId)}
-                      >
-                        <Avatar className="h-10 w-10 mr-3">
-                          <AvatarImage src={chatData.partner.avatarUrl} />
-                          <AvatarFallback>
-                            {chatData.partner.displayName?.substring(0, 2) || 
-                             chatData.partner.email?.substring(0, 2) || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-baseline">
-                            <h3 className="font-medium truncate">
-                              {chatData.partner.displayName || chatData.partner.email}
-                            </h3>
-                            <span className="text-xs text-gray-500">
-                              {formatDate(getLastMessageTime(chatData.messages))}
-                            </span>
+        <div className={`flex ${isMobile ? 'h-[calc(100vh-180px)]' : 'h-[calc(100vh-200px)]'} overflow-hidden rounded-lg border`}>
+          {/* Chat list sidebar - hidden on mobile when a chat is selected */}
+          {(!isMobile || (isMobile && showChatList)) && (
+            <div className={`${isMobile ? 'w-full' : 'w-1/3'} border-r bg-white`}>
+              <Tabs defaultValue="chats" className="h-full flex flex-col">
+                <div className="flex items-center justify-between px-2">
+                  <TabsList className={`grid ${isMobile ? 'w-3/4' : 'w-full'} ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} m-2`}>
+                    <TabsTrigger value="chats" className="flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4" />
+                      Chats
+                    </TabsTrigger>
+                    {!isMobile && (
+                      <TabsTrigger value="directory" className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Directory
+                      </TabsTrigger>
+                    )}
+                  </TabsList>
+                  
+                  {/* Mobile Directory Access */}
+                  {isMobile && (
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className="mr-2">
+                          <Users className="h-5 w-5" />
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent side="right" className="w-[85vw] sm:max-w-md">
+                        <div className="h-full flex flex-col">
+                          <div className="p-4 border-b">
+                            <h2 className="font-semibold">Business Directory</h2>
                           </div>
-                          <p className="text-sm text-gray-500 truncate">
-                            {getLastMessage(chatData.messages)}
-                          </p>
+                          <div className="overflow-y-auto flex-1">
+                            {businessLoading ? (
+                              <div className="p-4 text-center">
+                                <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                              </div>
+                            ) : businesses.length === 0 ? (
+                              <div className="p-4 text-center text-gray-500">
+                                No businesses available
+                              </div>
+                            ) : (
+                              businesses.map((business) => (
+                                <div
+                                  key={business.id}
+                                  className="flex items-center p-4 border-b cursor-pointer hover:bg-gray-50"
+                                  onClick={() => {
+                                    handleStartNewChat(business);
+                                  }}
+                                >
+                                  <Avatar className="h-10 w-10 mr-3">
+                                    <AvatarImage src={business.logo} />
+                                    <AvatarFallback>
+                                      {business.name?.substring(0, 2) || "B"}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <h3 className="font-medium truncate">{business.name}</h3>
+                                    <p className="text-sm text-gray-500 truncate">
+                                      {business.industry}
+                                    </p>
+                                  </div>
+                                  <MessageCircle className="h-4 w-4 text-gray-400" />
+                                </div>
+                              ))
+                            )}
+                          </div>
                         </div>
-                        {chatData.unreadCount > 0 && (
-                          <div className="ml-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                            {chatData.unreadCount}
-                          </div>
-                        )}
-                      </div>
-                    ))
+                      </SheetContent>
+                    </Sheet>
                   )}
                 </div>
-              </TabsContent>
-              
-              <TabsContent value="directory" className="flex-1 overflow-hidden">
-                <div className="p-4 border-b">
-                  <h2 className="font-semibold">Business Directory</h2>
-                </div>
-                <div className="overflow-y-auto h-full">
-                  {businessLoading ? (
-                    <div className="p-4 text-center">
-                      <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                    </div>
-                  ) : businesses.length === 0 ? (
-                    <div className="p-4 text-center text-gray-500">
-                      No businesses available
-                    </div>
-                  ) : (
-                    businesses.map((business) => (
-                      <div
-                        key={business.id}
-                        className="flex items-center p-4 border-b cursor-pointer hover:bg-gray-50"
-                        onClick={() => handleStartNewChat(business)}
-                      >
-                        <Avatar className="h-10 w-10 mr-3">
-                          <AvatarImage src={business.logo} />
-                          <AvatarFallback>
-                            {business.name?.substring(0, 2) || "B"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium truncate">{business.name}</h3>
-                          <p className="text-sm text-gray-500 truncate">
-                            {business.industry}
-                          </p>
-                        </div>
-                        <MessageCircle className="h-4 w-4 text-gray-400" />
+                
+                <TabsContent value="chats" className="flex-1 overflow-hidden">
+                  <div className="p-4 border-b">
+                    <h2 className="font-semibold">Recent Conversations</h2>
+                  </div>
+                  <div className="overflow-y-auto h-full">
+                    {chatEntries.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500">
+                        No conversations yet
                       </div>
-                    ))
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
+                    ) : (
+                      chatEntries.map(([userId, chatData]) => (
+                        <div
+                          key={userId}
+                          className={`flex items-center p-4 border-b cursor-pointer hover:bg-gray-50 ${
+                            selectedUserId === userId ? 'bg-gray-100' : ''
+                          }`}
+                          onClick={() => {
+                            setSelectedUserId(userId);
+                            if (isMobile) setShowChatList(false);
+                          }}
+                        >
+                          <Avatar className="h-10 w-10 mr-3">
+                            <AvatarImage src={chatData.partner.avatarUrl} />
+                            <AvatarFallback>
+                              {chatData.partner.displayName?.substring(0, 2) || 
+                               chatData.partner.email?.substring(0, 2) || "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-baseline">
+                              <h3 className="font-medium truncate">
+                                {chatData.partner.displayName || chatData.partner.email}
+                              </h3>
+                              <span className="text-xs text-gray-500">
+                                {formatDate(getLastMessageTime(chatData.messages))}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-500 truncate">
+                              {getLastMessage(chatData.messages)}
+                            </p>
+                          </div>
+                          {chatData.unreadCount > 0 && (
+                            <div className="ml-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                              {chatData.unreadCount}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </TabsContent>
+                
+                {!isMobile && (
+                  <TabsContent value="directory" className="flex-1 overflow-hidden">
+                    <div className="p-4 border-b">
+                      <h2 className="font-semibold">Business Directory</h2>
+                    </div>
+                    <div className="overflow-y-auto h-full">
+                      {businessLoading ? (
+                        <div className="p-4 text-center">
+                          <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                        </div>
+                      ) : businesses.length === 0 ? (
+                        <div className="p-4 text-center text-gray-500">
+                          No businesses available
+                        </div>
+                      ) : (
+                        businesses.map((business) => (
+                          <div
+                            key={business.id}
+                            className="flex items-center p-4 border-b cursor-pointer hover:bg-gray-50"
+                            onClick={() => handleStartNewChat(business)}
+                          >
+                            <Avatar className="h-10 w-10 mr-3">
+                              <AvatarImage src={business.logo} />
+                              <AvatarFallback>
+                                {business.name?.substring(0, 2) || "B"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-medium truncate">{business.name}</h3>
+                              <p className="text-sm text-gray-500 truncate">
+                                {business.industry}
+                              </p>
+                            </div>
+                            <MessageCircle className="h-4 w-4 text-gray-400" />
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </TabsContent>
+                )}
+              </Tabs>
+            </div>
+          )}
           
-          {/* Chat messages and input */}
-          <div className="flex-1 flex flex-col bg-gray-50">
-            {selectedChat ? (
-              <>
-                <div className="p-4 border-b bg-white flex items-center">
-                  <Avatar className="h-8 w-8 mr-2">
-                    <AvatarImage src={selectedChat.partner.avatarUrl} />
-                    <AvatarFallback>
-                      {selectedChat.partner.displayName?.substring(0, 2) || 
-                       selectedChat.partner.email?.substring(0, 2) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <h2 className="font-medium">
-                    {selectedChat.partner.displayName || selectedChat.partner.email}
-                  </h2>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {selectedChat.messages.map((message) => (
-                    <div 
-                      key={message.id} 
-                      className={`flex ${message.isSentByCurrentUser ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div 
-                        className={`max-w-[70%] rounded-lg p-3 ${
-                          message.isSentByCurrentUser 
-                            ? 'bg-primary text-primary-foreground' 
-                            : 'bg-white shadow'
-                        }`}
+          {/* Chat messages and input - full width on mobile when a chat is selected */}
+          {(!isMobile || (isMobile && !showChatList)) && (
+            <div className={`${isMobile ? 'w-full' : 'flex-1'} flex flex-col bg-gray-50`}>
+              {selectedChat ? (
+                <>
+                  <div className="p-4 border-b bg-white flex items-center sticky top-0 z-10">
+                    {isMobile && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="mr-2" 
+                        onClick={() => setShowChatList(true)}
                       >
-                        <p className="text-sm">{message.text}</p>
-                        <p className={`text-xs mt-1 ${
-                          message.isSentByCurrentUser 
-                            ? 'text-primary-foreground/70' 
-                            : 'text-gray-500'
-                        }`}>
-                          {formatTimestamp(message.timestamp)}
-                        </p>
+                        <ArrowLeft className="h-5 w-5" />
+                      </Button>
+                    )}
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarImage src={selectedChat.partner.avatarUrl} />
+                      <AvatarFallback>
+                        {selectedChat.partner.displayName?.substring(0, 2) || 
+                         selectedChat.partner.email?.substring(0, 2) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <h2 className="font-medium truncate">
+                      {selectedChat.partner.displayName || selectedChat.partner.email}
+                    </h2>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-2">
+                    {selectedChat.messages.length === 0 ? (
+                      <div className="text-center text-gray-500 py-8">
+                        No messages yet. Start the conversation!
                       </div>
-                    </div>
-                  ))}
+                    ) : (
+                      selectedChat.messages.map((message) => (
+                      <div 
+                        key={message.id} 
+                        className="flex w-full"
+                      >
+                        <div 
+                          className={`${isMobile ? 'max-w-[80%]' : 'max-w-[70%]'} rounded-lg p-3 ${
+                            message.isSentByCurrentUser 
+                              ? 'bg-primary text-primary-foreground ml-auto' 
+                              : 'bg-white shadow mr-auto'
+                          }`}
+                        >
+                          <p className="text-sm break-words">{message.text}</p>
+                          <p className={`text-xs mt-1 ${
+                            message.isSentByCurrentUser 
+                              ? 'text-primary-foreground/70' 
+                              : 'text-gray-500'
+                          }`}>
+                            {formatTimestamp(message.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                    )))
+                    }
+                  </div>
+                  
+                  <div className="p-4 border-t bg-white sticky bottom-0 z-10">
+                    <form 
+                      className="flex items-center gap-2"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }}
+                    >
+                      <Input
+                        placeholder="Type your message..."
+                        value={messageText}
+                        onChange={(e) => setMessageText(e.target.value)}
+                        className="flex-1"
+                        autoComplete="off"
+                      />
+                      <Button 
+                        type="submit" 
+                        size="icon" 
+                        disabled={messageText.trim() === ""}
+                        className="shrink-0"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </form>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-muted-foreground">Select a chat to start messaging</p>
                 </div>
-                
-                <div className="p-4 border-t bg-white">
-                  <form 
-                    className="flex items-center gap-2"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }}
-                  >
-                    <Input
-                      placeholder="Type your message..."
-                      value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button type="submit" size="icon" disabled={messageText.trim() === ""}>
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </form>
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <p className="text-muted-foreground">Select a chat to start messaging</p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>

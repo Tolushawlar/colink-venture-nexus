@@ -2,64 +2,61 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { Business } from "@/types";
-
-const businesses: Business[] = [
-  {
-    id: "1",
-    name: "TechSolutions Inc.",
-    description: "Providing innovative tech solutions for modern businesses.",
-    logo: "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Technology",
-    partnershipOffers: ["Software Integration", "Tech Consulting"],
-  },
-  {
-    id: "2",
-    name: "EcoFriendly Solutions",
-    description: "Sustainable products and services for eco-conscious businesses.",
-    logo: "https://images.unsplash.com/photo-1542744094-24638eff58bb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Sustainability",
-    sponsorshipOffers: ["Green Events", "Environmental Campaigns"],
-  },
-  {
-    id: "3",
-    name: "Creative Marketing",
-    description: "Full-service marketing agency specializing in digital campaigns.",
-    logo: "https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Marketing",
-    partnershipOffers: ["Brand Collaborations", "Joint Marketing"],
-    sponsorshipOffers: ["Event Marketing"],
-  },
-  {
-    id: "4",
-    name: "Finance Experts LLC",
-    description: "Professional financial services for businesses of all sizes.",
-    logo: "https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Finance",
-    partnershipOffers: ["Financial Consulting"],
-  },
-  {
-    id: "5",
-    name: "HealthPlus",
-    description: "Health and wellness solutions for corporate programs.",
-    logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjN8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Health",
-    sponsorshipOffers: ["Wellness Events", "Health Initiatives"],
-  },
-  {
-    id: "6",
-    name: "Global Logistics",
-    description: "Worldwide shipping and logistics services for businesses.",
-    logo: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjl8fGNvbXBhbnl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=600&q=60",
-    industry: "Logistics",
-    partnershipOffers: ["Logistics Solutions", "Supply Chain Integration"],
-  },
-];
+import { apiCall } from "@/config/api";
+import { Link } from "react-router-dom";
 
 const BusinessSlider = () => {
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [loading, setLoading] = useState(true);
   const sliderRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchBusinesses = async () => {
+      try {
+        setLoading(true);
+        const businessesResponse = await apiCall('/businesses/');
+        const usersResponse = await apiCall('/users/getAllUsers');
+        
+        if (businessesResponse.ok && usersResponse.ok) {
+          const businessesData = await businessesResponse.json();
+          const usersData = await usersResponse.json();
+          
+          // Create a map of user emails to account types
+          const userAccountTypes = new Map();
+          usersData.users.forEach((user: any) => {
+            userAccountTypes.set(user.email, user.accountType);
+          });
+          
+          // Process businesses
+          const processedBusinesses = businessesData.businesses
+            .map((business: any) => ({
+              ...business,
+              id: business.id,
+              name: business.name,
+              description: business.description,
+              logo: business.logo || "https://via.placeholder.com/150",
+              industry: business.industry,
+              partnershipOffers: JSON.parse(business.partnership_offers || business.partnershipOffers || '[]'),
+              sponsorshipOffers: JSON.parse(business.sponsorship_offers || business.sponsorshipOffers || '[]'),
+              accountType: userAccountTypes.get(business.email) || "partnership"
+            }))
+            .filter((business: any) => business.name && business.logo);
+          
+          // Get featured businesses (limit to 6)
+          setBusinesses(processedBusinesses.slice(0, 6));
+        }
+      } catch (error) {
+        console.error('Error fetching businesses:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBusinesses();
+  }, []);
 
   const scrollLeft = () => {
     if (sliderRef.current) {
@@ -101,67 +98,88 @@ const BusinessSlider = () => {
               Discover businesses ready for partnerships and sponsorships
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={scrollLeft}
-              disabled={scrollPosition <= 0}
-              className="rounded-full h-10 w-10"
-            >
-              <ArrowLeft size={18} />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={scrollRight}
-              className="rounded-full h-10 w-10"
-            >
-              <ArrowRight size={18} />
-            </Button>
-          </div>
+          {businesses.length > 0 && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={scrollLeft}
+                disabled={scrollPosition <= 0}
+                className="rounded-full h-10 w-10"
+              >
+                <ArrowLeft size={18} />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={scrollRight}
+                className="rounded-full h-10 w-10"
+              >
+                <ArrowRight size={18} />
+              </Button>
+            </div>
+          )}
         </div>
 
-        <div 
-          className="flex overflow-x-auto py-4 -mx-4 px-4 hide-scrollbar"
-          ref={sliderRef}
-          style={{ scrollbarWidth: "none" }}
-        >
-          <div className="flex gap-6">
-            {businesses.map((business) => (
-              <Card key={business.id} className="min-w-[320px] shadow-sm">
-                <CardContent className="p-0">
-                  <div className="h-40 overflow-hidden">
-                    <img
-                      src={business.logo}
-                      alt={business.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <div className="inline-block px-3 py-1 text-xs font-medium bg-gray-100 rounded-full mb-3">
-                      {business.industry}
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">{business.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{business.description}</p>
-                    <div className="flex gap-2">
-                      {business.partnershipOffers && (
-                        <Button variant="outline" size="sm" className="text-xs">
-                          Partnerships
-                        </Button>
-                      )}
-                      {business.sponsorshipOffers && (
-                        <Button variant="outline" size="sm" className="text-xs">
-                          Sponsorships
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2">Loading featured businesses...</p>
           </div>
-        </div>
+        ) : businesses.length > 0 ? (
+          <div 
+            className="flex overflow-x-auto py-4 -mx-4 px-4 hide-scrollbar"
+            ref={sliderRef}
+            style={{ scrollbarWidth: "none" }}
+          >
+            <div className="flex gap-6">
+              {businesses.map((business) => (
+                <Card key={business.id} className="min-w-[320px] shadow-sm">
+                  <CardContent className="p-0">
+                    <div className="h-40 overflow-hidden">
+                      <img
+                        src={business.logo}
+                        alt={business.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-5">
+                      <div className="inline-block px-3 py-1 text-xs font-medium bg-gray-100 rounded-full mb-3">
+                        {business.industry}
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2">{business.name}</h3>
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">{business.description}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {business.partnershipOffers && business.partnershipOffers.length > 0 && (
+                          <Button variant="outline" size="sm" className="text-xs">
+                            Partnerships
+                          </Button>
+                        )}
+                        {business.sponsorshipOffers && business.sponsorshipOffers.length > 0 && (
+                          <Button variant="outline" size="sm" className="text-xs">
+                            Sponsorships
+                          </Button>
+                        )}
+                        <div className="ml-auto">
+                          <Button asChild size="sm" variant="link" className="text-xs p-0">
+                            <Link to={`/business/${business.id}`}>View</Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-12 border rounded-lg bg-gray-50">
+            <p className="text-gray-500 mb-4">No featured businesses available</p>
+            <Button asChild variant="outline">
+              <Link to="/contact">Contact us to be featured</Link>
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   );
