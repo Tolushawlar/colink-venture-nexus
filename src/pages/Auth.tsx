@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Navigate, Link, useNavigate } from "react-router-dom";
+import { Navigate, Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import emailjs from '@emailjs/browser';
@@ -20,6 +20,9 @@ const Auth = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const fromBeta = searchParams.get('from') === 'beta';
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,9 +34,15 @@ const Auth = () => {
   const [resetEmail, setResetEmail] = useState("");
   const [resetStep, setResetStep] = useState(1); // 1: email entry, 2: code verification, 3: new password
 
-  // If already logged in, redirect to home page
+  // If already logged in, redirect to appropriate page
   if (user) {
-    return <Navigate to="/" replace />;
+    // If coming from beta, go back to beta
+    if (fromBeta) {
+      console.log('User already logged in, redirecting to beta');
+      return <Navigate to="/beta" replace />;
+    } else {
+      return <Navigate to="/" replace />;
+    }
   }
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -65,13 +74,12 @@ const Auth = () => {
         sessionStorage.setItem('SIGNED_IN', 'true');
         const onboarded = sessionStorage.getItem('onboarded');
         console.log(onboarded);
-        // const not = ""
-        // if (onboarded) {
-        //   navigate('/');
-        // } else {
-        //   navigate('/Onboarding');
-        // }
-        navigate("/")
+        
+        console.log('Sign in successful, fromBeta:', fromBeta);
+        
+        // Always redirect to beta after successful login
+        navigate("/beta");
+        return;
       }
     } catch (error: any) {
       toast({

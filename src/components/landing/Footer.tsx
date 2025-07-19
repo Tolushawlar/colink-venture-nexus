@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Separator } from "@/components/ui/separator";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -8,13 +9,13 @@ const Footer = () => {
       <div className="container-wide py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           <div className="lg:col-span-2">
-            <a href="/" className="flex items-center space-x-2 mb-4">
+            <Link to="/beta" className="flex items-center space-x-2 mb-4">
               <img 
                 src="/lovable-uploads/b2f72189-44d3-499b-820d-4f1b98ea3cb7.png" 
                 alt="CoLink Venture" 
                 className="h-8 bg-white p-1 rounded" 
               />
-            </a>
+            </Link>
             <p className="text-gray-400 mb-4 max-w-md">
               CoLink Venture is your all-in-one platform for finding business 
               partnerships and sponsorships. Connect, collaborate, and grow together.

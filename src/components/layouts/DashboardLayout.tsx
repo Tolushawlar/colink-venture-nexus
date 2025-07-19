@@ -73,7 +73,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     {
       title: "Home",
       icon: Home,
-      href: "/"
+      href: "/beta"
     },
     {
       title: "Dashboard",

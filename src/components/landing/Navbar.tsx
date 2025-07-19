@@ -18,7 +18,7 @@ import { authenticatedApiCall } from "@/config/api";
 const mainNavItems: NavItem[] = [
   {
     title: "Home",
-    href: "/",
+    href: "/beta",
   },
   {
     title: "About Us",
@@ -81,7 +81,15 @@ const Navbar = () => {
   }, [user]);
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      // Store the beta flag before signing out
+      sessionStorage.setItem('redirectToBeta', 'true');
+      await signOut();
+      // Force navigation to beta after signout
+      navigate('/beta');
+    } catch (error) {
+      console.error('Error during sign out:', error);
+    }
   };
 
   const handleNavigateToAuth = () => {
@@ -115,7 +123,7 @@ const Navbar = () => {
     <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
       <div className="container-wide flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/beta" className="flex items-center space-x-2">
             <img
               src="/lovable-uploads/b2f72189-44d3-499b-820d-4f1b98ea3cb7.png"
               alt="CoLink Venture"

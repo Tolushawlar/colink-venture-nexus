@@ -24,13 +24,26 @@ const Index = () => {
   
   // Check for onboarded value in session storage and redirect if needed
   useEffect(() => {
+    // Set a flag to prevent redirection from beta
+    sessionStorage.setItem('skipAutoNavigation', 'true');
+    
     const onboarded = sessionStorage.getItem('onboarded');
     const isSignedIn = sessionStorage.getItem('SIGNED_IN') === 'true';
     
-    // Only redirect to onboarding if user is signed in
-    if (onboarded && isSignedIn) {
-      navigate('/onboarding');
-    }
+    console.log('Index.tsx - isSignedIn:', isSignedIn, 'onboarded:', onboarded);
+    console.log('Setting skipAutoNavigation to prevent redirection');
+    
+    // Disable automatic redirection to onboarding
+    // if (onboarded && isSignedIn) {
+    //   navigate('/onboarding');
+    // }
+    
+    // Cleanup function to remove the flag when component unmounts
+    return () => {
+      if (window.location.pathname !== '/beta') {
+        sessionStorage.removeItem('skipAutoNavigation');
+      }
+    };
   }, [navigate]);
   
   useEffect(() => {

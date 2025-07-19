@@ -24,6 +24,7 @@ import ContactUs from "./pages/ContactUs";
 import PartnershipsLanding from "./pages/PartnershipsLanding";
 import SponsorshipsLanding from "./pages/SponsorshipsLanding";
 import GoogleAuthCallback from "./components/GoogleAuthCallback";
+import ComingSoon from "./pages/ComingSoon";
 import React from "react";
 
 // Create a new QueryClient instance outside of the component
@@ -31,7 +32,8 @@ const queryClient = new QueryClient();
 
 const AppRoutes = () => (
   <Routes>
-    <Route path="/" element={<Index />} />
+    <Route path="/" element={<ComingSoon />} />
+    <Route path="/beta" element={<Index />} />
     <Route path="/about-us" element={<AboutUs />} />
     <Route path="/contact-us" element={<ContactUs />} />
     <Route path="/partnerships-info" element={<PartnershipsLanding />} />

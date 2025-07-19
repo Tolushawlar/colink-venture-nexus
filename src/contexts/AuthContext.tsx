@@ -60,6 +60,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedToken = sessionStorage.getItem('token');
     const storedUserString = sessionStorage.getItem('user');
     
+    console.log('AuthContext - Current path:', location.pathname);
+    console.log('AuthContext - Signed in:', storedSignedIn);
+    
+    // Special handling for beta route
+    if (location.pathname === '/beta') {
+      console.log('Beta route detected - skipping redirection logic');
+      setIsLoading(false);
+      return;
+    }
+    
     // Always allow access to public pages
     if (location.pathname === '/' || 
         location.pathname === '/auth' || 
@@ -78,6 +88,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Mark initial load as complete
         sessionStorage.setItem('initialLoadComplete', 'true');
+        
+        // Special handling for beta route - skip all redirection logic
+        if (location.pathname === '/beta') {
+          console.log('Beta route with auth - keeping user on beta page');
+          setIsLoading(false);
+          return;
+        }
 
         // Skip auto-navigation for certain protected pages, public pages, or if skipAutoNavigation flag is set
         const isProtectedPage = 
@@ -139,6 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const isPublicPage = 
         location.pathname === '/' || 
         location.pathname === '/auth' || 
+        location.pathname === '/beta' || 
         location.pathname.includes('-info') || 
         location.pathname === '/about-us' || 
         location.pathname === '/contact-us' || 
@@ -286,12 +304,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       //   headers: { 'Authorization': `Bearer ${token}` },
       // });
 
+      // Store current path before clearing session data
+      const currentPath = location.pathname;
+      const isBetaRoute = currentPath.includes('/beta');
+      const redirectToBeta = sessionStorage.getItem('redirectToBeta') === 'true';
+      
+      // Remember the beta flag before clearing session data
+      const shouldRedirectToBeta = isBetaRoute || redirectToBeta;
+      
       setAuthData(null, null, false); // Clear all session data
+      
+      // Restore the beta flag if needed
+      if (shouldRedirectToBeta) {
+        sessionStorage.setItem('redirectToBeta', 'true');
+      }
+      
       toast({
         title: "Signed out",
         description: "You've been signed out successfully.",
       });
-      navigate("/");
+      
+      // Redirect to beta if signing out from beta route or if redirectToBeta flag is set
+      if (shouldRedirectToBeta) {
+        navigate("/beta");
+      } else {
+        navigate("/");
+      }
+      
+      // Clean up the flag
+      sessionStorage.removeItem('redirectToBeta');
     } catch (error: any) {
       toast({
         title: "Sign out failed",

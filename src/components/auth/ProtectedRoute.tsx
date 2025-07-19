@@ -20,8 +20,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = f
     );
   }
   
+  // Special handling for beta route
+  const isBetaRoute = window.location.pathname === '/beta';
+  
   // Redirect to login if not authenticated
   if (!user) {
+    // If on beta route, redirect to beta-specific auth
+    if (isBetaRoute) {
+      return <Navigate to="/auth?from=beta" replace />;
+    }
     return <Navigate to="/auth" replace />;
   }
   
