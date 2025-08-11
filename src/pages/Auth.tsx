@@ -17,7 +17,7 @@ import emailjs from '@emailjs/browser';
 import { apiCall } from "@/config/api";
 
 const Auth = () => {
-  const { user } = useAuth();
+  const { user, setAuthState } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -69,15 +69,16 @@ const Auth = () => {
       } else {
         // Store auth data in session storage
         sessionStorage.setItem('token', data.token);
-        sessionStorage.setItem('user', JSON.stringify(data.user));        // Store auth data in session storage
-        sessionStorage.setItem('accountType', JSON.stringify(data.user.accountType));        // Store auth data in session storage
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+        sessionStorage.setItem('accountType', JSON.stringify(data.user.accountType));
         sessionStorage.setItem('SIGNED_IN', 'true');
-        const onboarded = sessionStorage.getItem('onboarded');
-        console.log(onboarded);
+        
+        // Update AuthContext state immediately
+        setAuthState(data.token, data.user);
         
         console.log('Sign in successful, fromBeta:', fromBeta);
         
-        // Always redirect to beta after successful login
+        // Navigate to beta
         navigate("/beta");
         return;
       }
@@ -215,7 +216,12 @@ const Auth = () => {
         // Store auth data in session storage
         sessionStorage.setItem('token', data.token);
         sessionStorage.setItem('user', JSON.stringify(data.user));
+        sessionStorage.setItem('accountType', JSON.stringify(data.user.accountType));
+        sessionStorage.setItem('SIGNED_IN', 'true');
         sessionStorage.setItem('onboarded', "!onboarded");
+
+        // Update AuthContext state immediately
+        setAuthState(data.token, data.user);
 
         // Send welcome email
         const templateParams = {
@@ -237,8 +243,8 @@ const Auth = () => {
           description: data.Accountcreated || "Your account has been created successfully."
         });
 
-        // Switch to sign in tab after successful signup
-        setActiveTab("signin");
+        // Navigate to beta
+        navigate("/beta");
       }
     } catch (error: any) {
       toast({

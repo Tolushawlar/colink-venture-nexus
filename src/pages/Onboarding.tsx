@@ -57,16 +57,22 @@ const formSchema = z.object({
 });
 
 const industries = [
-  "Technology",
-  "Marketing",
-  "Design",
-  "Events",
-  "Education",
-  "Finance",
+  "School and Education",
+  "Social Service",
   "Healthcare",
-  "Media",
-  "Retail",
-  "Other"
+  "Art & Culture",
+  "Government",
+  "Recreation",
+  "Food and Hospitality",
+  "Technology",
+  "Environment",
+  "Business and Entrepreneurship",
+  "Community Development",
+  "Nonprofit and Philanthropy",
+  "Sports Sponsorship",
+  "Music and Entertainment Sponsorship",
+  "Charitable Sponsorship",
+  "Cultural and Arts Sponsorship"
 ];
 
 const Onboarding = () => {

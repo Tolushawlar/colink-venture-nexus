@@ -159,11 +159,11 @@ const Index = () => {
                                         setOpen(false);
                                         navigate(`/business/${business.id}?type=partnership`);
                                       }}
-                                      className="cursor-pointer"
+                                      className="cursor-pointer text-black hover:text-white"
                                     >
                                       <Search className="mr-2 h-4 w-4" />
-                                      <span>{business.name}</span>
-                                      <span className="text-sm text-muted-foreground ml-2">
+                                      <span>{business.name} - </span>
+                                      <span className="text-sm ml-2">
                                         {business.industry}
                                       </span>
                                     </CommandItem>
@@ -213,11 +213,11 @@ const Index = () => {
                                         setOpen(false);
                                         navigate(`/business/${business.id}?type=partnership`);
                                       }}
-                                      className="cursor-pointer"
+                                      className="cursor-pointer text-black hover:text-white"
                                     >
                                       <Search className="mr-2 h-4 w-4" />
                                       <span>{business.name}</span>
-                                      <span className="text-sm text-muted-foreground ml-2">
+                                      <span className="text-sm ml-2">
                                         {business.location}
                                       </span>
                                     </CommandItem>
@@ -285,11 +285,11 @@ const Index = () => {
                                       setOpen(false);
                                       navigate(`/business/${business.id}?type=partnership`);
                                     }}
-                                    className="cursor-pointer"
+                                    className="cursor-pointer text-black hover:text-white"
                                   >
                                     <Search className="mr-2 h-4 w-4" />
                                     <span>{business.name}</span>
-                                    <span className="text-sm text-muted-foreground ml-2">
+                                    <span className="text-sm ml-2">
                                       {business.location} • {business.industry}
                                     </span>
                                   </CommandItem>

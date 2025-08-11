@@ -22,6 +22,7 @@ type AuthContextType = {
   signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<void>;
   signOut: () => Promise<void>;
   updateUserProfile: (metadata: Record<string, any>) => Promise<void>;
+  setAuthState: (token: string, user: UserData) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -344,6 +345,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const setAuthState = (newToken: string, newUser: UserData) => {
+    setAuthData(newToken, newUser, true);
+  };
+
   const value = {
     token,
     user,
@@ -352,6 +357,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signUp,
     signOut,
     updateUserProfile,
+    setAuthState,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

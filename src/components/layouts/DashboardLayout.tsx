@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
-  SidebarTrigger
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   Home,
@@ -25,7 +24,7 @@ import {
   Calendar,
   MessageSquare,
   FileText,
-  Menu
+  Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -38,23 +37,24 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { user, signOut } = useAuth();
   const location = useLocation();
-  const isAdmin = user?.email === "admin@colink.com" || user?.user_metadata?.role === "admin";
-  const accountType = sessionStorage.getItem('accountType') || "partnership";  
+  const isAdmin =
+    user?.email === "admin@colink.com" || user?.user_metadata?.role === "admin";
+  const accountType = sessionStorage.getItem("accountType") || "partnership";
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  
+
   const getInitials = (email: string) => {
     return email.substring(0, 2).toUpperCase();
   };
-  
+
   // Fetch user profile to get avatar URL
   useEffect(() => {
     const fetchUserAvatar = async () => {
       try {
-        const token = sessionStorage.getItem('token');
+        const token = sessionStorage.getItem("token");
         if (!token) return;
-        
-        const response = await authenticatedApiCall('/users/profile');
-        
+
+        const response = await authenticatedApiCall("/users/profile");
+
         if (response.ok) {
           const data = await response.json();
           if (data.user?.avatar_url) {
@@ -65,54 +65,54 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         console.error("Error fetching user avatar:", error);
       }
     };
-    
+
     fetchUserAvatar();
   }, []);
-  
+
   const menuItems = [
     {
       title: "Home",
       icon: Home,
-      href: "/beta"
+      href: "/beta",
     },
     {
       title: "Dashboard",
       icon: LayoutDashboard,
-      href: accountType === "sponsorship" ? "/sponsorships" : "/partnerships"
+      href: accountType === "sponsorship" ? "/sponsorships" : "/partnerships",
     },
     {
       title: "Profile",
       icon: UserCircle,
-      href: "/profile"
+      href: "/profile",
     },
     {
       title: "Business Directory",
       icon: Building,
-      href: accountType === "sponsorship" ? "/sponsorships" : "/partnerships"
+      href: accountType === "sponsorship" ? "/sponsorships" : "/partnerships",
     },
     {
       title: "Appointments",
       icon: Calendar,
-      href: "/appointments"
+      href: "/appointments",
     },
     {
       title: "Chats",
       icon: MessageSquare,
-      href: "/chats"
+      href: "/chats",
     },
     {
       title: "Posts",
       icon: FileText,
-      href: "/posts"
-    }
+      href: "/posts",
+    },
   ];
-  
+
   // Add admin dashboard link if user is admin
   if (isAdmin) {
     menuItems.push({
       title: "Admin Dashboard",
       icon: BarChart,
-      href: "/admin-dashboard"
+      href: "/admin-dashboard",
     });
   }
 
@@ -123,15 +123,22 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <SidebarHeader className="flex items-center p-4 bg-gray-100">
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={avatarUrl || user?.user_metadata?.avatarUrl} />
-                <AvatarFallback>{user ? getInitials(user.email) : "U"}</AvatarFallback>
+                <AvatarImage
+                  src={avatarUrl || user?.user_metadata?.avatarUrl}
+                />
+                <AvatarFallback>
+                  {user ? getInitials(user.email) : "U"}
+                </AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
                 <span className="font-medium text-sm">{user?.email}</span>
-                <span className="text-xs text-muted-foreground capitalize">{accountType} Account</span>              </div>
+                <span className="text-sm text-black text-muted-foreground capitalize">
+                  {accountType} Account
+                </span>
+              </div>
             </div>
           </SidebarHeader>
-          
+
           <SidebarContent className="bg-white">
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -151,11 +158,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               ))}
             </SidebarMenu>
           </SidebarContent>
-          
+
           <SidebarFooter className="p-4 bg-gray-100 border-t border-gray-200">
-            <Button 
-              variant="outline" 
-              className="w-full justify-start bg-white hover:bg-gray-100" 
+            <Button
+              variant="outline"
+              className="w-full justify-start bg-white hover:bg-gray-100"
               onClick={signOut}
             >
               <LogOut className="mr-2 h-4 w-4" />
@@ -163,7 +170,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </Button>
           </SidebarFooter>
         </Sidebar>
-        
+
         <div className="flex-1 overflow-auto">
           <div className="p-4 sm:p-6 lg:p-8">
             <div className="flex items-center justify-between mb-4">

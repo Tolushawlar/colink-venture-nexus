@@ -20,6 +20,10 @@ const Footer = () => {
               CoLink Venture is your all-in-one platform for finding business 
               partnerships and sponsorships. Connect, collaborate, and grow together.
             </p>
+            <div className="text-gray-400 text-sm space-y-1 mb-4">
+              <p>📞 (518) 913-2069</p>
+              <p>📍 600 Broadway, Ste 200 #2525<br />Albany, New York 12207</p>
+            </div>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
                 <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">

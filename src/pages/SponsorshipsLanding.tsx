@@ -99,10 +99,12 @@ const SponsorshipsLanding = () => {
           <div className="container-wide">
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="text-4xl md:text-5xl font-bold leading-tight tracking-tight text-colink-navy mb-6">
-                Discover <span className="text-colink-teal">Sponsorships</span>
+                {/* Discover <span className="text-colink-teal">Sponsorships</span> */}
+                Welcome to the <span className="text-colink-teal">Sponsorships </span>section of Colink Venture!
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Through our platform, individuals and organizations can form mutually beneficial partnerships, leveraging each other's strengths and resources to drive meaningful change.
+                {/* Through our platform, individuals and organizations can form mutually beneficial partnerships, leveraging each other's strengths and resources to drive meaningful change. */}
+                At CoLink Venture, we recongize how vital sponsorship is for sports, entertainment m adn noprofit organizations. By patnering with individuals, businesses, and corporations, these organizations can improve their events and make a positive impact in their communities.
               </p>
               {!user && (
                 <Button className="btn-primary text-base py-6 px-8" asChild>

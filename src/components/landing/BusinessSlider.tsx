@@ -149,17 +149,10 @@ const BusinessSlider = () => {
                       </div>
                       <h3 className="text-xl font-semibold mb-2">{business.name}</h3>
                       <p className="text-gray-600 text-sm mb-4 line-clamp-2">{business.description}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {business.partnershipOffers && business.partnershipOffers.length > 0 && (
-                          <Button variant="outline" size="sm" className="text-xs">
-                            Partnerships
-                          </Button>
-                        )}
-                        {business.sponsorshipOffers && business.sponsorshipOffers.length > 0 && (
-                          <Button variant="outline" size="sm" className="text-xs">
-                            Sponsorships
-                          </Button>
-                        )}
+                      <div className="flex flex-wrap gap-2 items-center">
+                        <Button variant="outline" size="sm" className="text-xs capitalize">
+                          {business.accountType}
+                        </Button>
                         <div className="ml-auto">
                           <Button asChild size="sm" variant="link" className="text-xs p-0">
                             <Link to={`/business/${business.id}`}>View</Link>
