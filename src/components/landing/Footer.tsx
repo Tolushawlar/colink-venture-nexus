@@ -52,24 +52,24 @@ const Footer = () => {
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Platform</h3>
             <ul className="mt-4 space-y-2">
               <li>
-                <a href="/partnerships" className="text-gray-400 hover:text-colink-teal transition-colors">
+                <Link to="/partnerships-info" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Partnerships
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/sponsorships" className="text-gray-400 hover:text-colink-teal transition-colors">
+                <Link to="/sponsorships-info" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Sponsorships
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#pricing" className="text-gray-400 hover:text-colink-teal transition-colors">
+                <Link to="/pricing" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Pricing
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
+                <Link to="/security" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Security
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -78,24 +78,24 @@ const Footer = () => {
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Company</h3>
             <ul className="mt-4 space-y-2">
               <li>
-                <a href="#about" className="text-gray-400 hover:text-colink-teal transition-colors">
+                <Link to="/about-us" className="text-gray-400 hover:text-colink-teal transition-colors">
                   About
-                </a>
+                </Link>
               </li>
-              <li>
-                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
+              {/* <li>
+                <Link to="/blog" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Blog
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
+                <Link to="/careers" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Careers
-                </a>
-              </li>
+                </Link>
+              </li> */}
               <li>
-                <a href="#contact" className="text-gray-400 hover:text-colink-teal transition-colors">
+                <Link to="/contact-us" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -104,19 +104,19 @@ const Footer = () => {
             <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Legal</h3>
             <ul className="mt-4 space-y-2">
               <li>
-                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
+                <Link to="/privacy" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Privacy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
+                <Link to="/terms" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Terms
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-400 hover:text-colink-teal transition-colors">
+                <Link to="/cookie-policy" className="text-gray-400 hover:text-colink-teal transition-colors">
                   Cookie Policy
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

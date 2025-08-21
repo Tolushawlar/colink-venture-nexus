@@ -33,6 +33,7 @@ const Auth = () => {
   const [newPassword, setNewPassword] = useState("");
   const [resetEmail, setResetEmail] = useState("");
   const [resetStep, setResetStep] = useState(1); // 1: email entry, 2: code verification, 3: new password
+  const [selectedAccountType, setSelectedAccountType] = useState<string>("");
 
   // If already logged in, redirect to appropriate page
   if (user) {
@@ -50,6 +51,15 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      if (!selectedAccountType) {
+        toast({
+          variant: "destructive",
+          title: "Account Type Required",
+          description: "Please select your account type before signing in."
+        });
+        return;
+      }
+
       const response = await apiCall('/users/login', {
         method: 'POST',
         body: JSON.stringify({
@@ -67,6 +77,15 @@ const Auth = () => {
           description: data.message || "Failed to sign in"
         });
       } else {
+        // Check if selected account type matches user's account type
+        if (data.user.accountType !== selectedAccountType) {
+          toast({
+            variant: "destructive",
+            title: "Account Type Mismatch",
+            description: `This account is registered for ${data.user.accountType}, but you selected ${selectedAccountType}.`
+          });
+          return;
+        }
         // Store auth data in session storage
         sessionStorage.setItem('token', data.token);
         sessionStorage.setItem('user', JSON.stringify(data.user));
@@ -291,6 +310,33 @@ const Auth = () => {
               <CardContent>
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
+                    <label className="text-sm font-medium">Account Type *</label>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedAccountType("partnership")}
+                        className={`flex-1 py-2 px-4 rounded border text-sm font-medium transition-colors ${
+                          selectedAccountType === "partnership"
+                            ? "bg-blue-500 text-white border-blue-500"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        Partnership
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedAccountType("sponsorship")}
+                        className={`flex-1 py-2 px-4 rounded border text-sm font-medium transition-colors ${
+                          selectedAccountType === "sponsorship"
+                            ? "bg-purple-500 text-white border-purple-500"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        Sponsorship
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
                     <label htmlFor="signin-email" className="text-sm font-medium">
                       Email
                     </label>
@@ -355,6 +401,11 @@ const Auth = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Important:</strong> Registrations for Partnership and Sponsorship cannot use the same email address. Each account type requires a unique email.
+                  </p>
+                </div>
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
                     <label htmlFor="signup-email" className="text-sm font-medium">

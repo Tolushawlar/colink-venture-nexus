@@ -357,59 +357,14 @@ const Posts = () => {
                 <label className="block text-sm font-medium mb-2" htmlFor="post-content">
                   Post Content
                 </label>
-                <div className="border rounded-md">
-                  <div className="p-2 border-b bg-gray-50 flex gap-2">
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => {
-                        const selection = window.getSelection();
-                        if (selection && selection.rangeCount > 0) {
-                          const range = selection.getRangeAt(0);
-                          const bold = document.createElement('strong');
-                          try {
-                            range.surroundContents(bold);
-                          } catch (e) {
-                            bold.appendChild(range.extractContents());
-                            range.insertNode(bold);
-                          }
-                        }
-                      }}
-                    >
-                      <strong>B</strong>
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => {
-                        const selection = window.getSelection();
-                        if (selection && selection.rangeCount > 0) {
-                          const range = selection.getRangeAt(0);
-                          const italic = document.createElement('em');
-                          try {
-                            range.surroundContents(italic);
-                          } catch (e) {
-                            italic.appendChild(range.extractContents());
-                            range.insertNode(italic);
-                          }
-                        }
-                      }}
-                    >
-                      <em>I</em>
-                    </Button>
-                  </div>
-                  <div
-                    contentEditable
-                    className="p-3 min-h-32 focus:outline-none"
-                    onInput={(e) => {
-                      const content = e.currentTarget.innerHTML;
-                      setNewPost({ ...newPost, content });
-                    }}
-                    dangerouslySetInnerHTML={{ __html: newPost.content }}
-                  />
-                </div>
+                <Textarea
+                  id="post-content"
+                  placeholder="Write your post content here..."
+                  value={newPost.content}
+                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                  className="min-h-32"
+                  dir="ltr"
+                />
               </div>
 
               {/* <div>

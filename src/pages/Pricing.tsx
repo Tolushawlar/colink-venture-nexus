@@ -13,10 +13,11 @@ const pricingTiers = [
     price: 0,
     description: "Basic features for limited use",
     features: [
-      "1 partnership connection per month",
-      "1 sponsorship connection per month",
-      "Basic profile",
-      "Limited search"
+      "3 business connections per month",
+      "Basic business profile",
+      "Limited search filters",
+      "Community access",
+      "Basic messaging"
     ],
     cta: "Start Free",
     popular: false
@@ -26,11 +27,12 @@ const pricingTiers = [
     price: 9.99,
     description: "Everything you need to get started",
     features: [
-      "10 partnership connections per month",
-      "5 sponsorship connections per month",
-      "Enhanced profile",
-      "Full search access",
-      "Basic appointment scheduling"
+      "15 business connections per month",
+      "Enhanced business profile",
+      "Industry & location filters",
+      "Appointment scheduling",
+      "Priority messaging",
+      "Basic partnership matching"
     ],
     cta: "Start 14-day Trial",
     popular: false
@@ -40,12 +42,13 @@ const pricingTiers = [
     price: 29.99,
     description: "For growing businesses and creators",
     features: [
-      "Unlimited partnership connections",
-      "25 sponsorship connections per month",
-      "Featured profile badge",
-      "Advanced search filters",
-      "Full appointment scheduling",
-      "Basic analytics"
+      "Unlimited business connections",
+      "Featured profile with badge",
+      "Advanced search & filters",
+      "Smart partnership matching",
+      "Sponsorship opportunity alerts",
+      "Business analytics dashboard",
+      "Priority customer support"
     ],
     cta: "Start 14-day Trial",
     popular: true
@@ -55,12 +58,13 @@ const pricingTiers = [
     price: 99.99,
     description: "For organizations with large networks",
     features: [
-      "Unlimited partnership & sponsorship connections",
-      "Priority matching algorithm",
-      "Verified business badge",
-      "Advanced analytics and reporting",
+      "Unlimited platform access",
+      "Verified business status",
+      "Custom partnership categories",
+      "Advanced analytics & reporting",
       "Dedicated account manager",
-      "Custom branding options"
+      "API access for integrations",
+      "White-label options"
     ],
     cta: "Start 14-day Trial",
     popular: false
@@ -115,7 +119,7 @@ const Pricing = () => {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Simple, Transparent Pricing</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Choose the perfect plan for your needs. All plans include a 14-day free trial.
+            Choose the perfect plan to connect with businesses for partnerships and sponsorships. All paid plans include a 14-day free trial.
           </p>
         </div>
 

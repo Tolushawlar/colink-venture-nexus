@@ -3,7 +3,9 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import BusinessSearch from "@/components/business/BusinessSearch";
+import BusinessCategories from "@/components/business/BusinessCategories";
 import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Partnerships = () => {
   const { toast } = useToast();
@@ -33,6 +35,10 @@ const Partnerships = () => {
     }
   }, [searchQuery, businessId, toast]);
 
+  const handleCategorySelect = (category: string) => {
+    console.log('Selected category:', category);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -42,9 +48,20 @@ const Partnerships = () => {
           Find the right match for your initiatives and grow together.
         </p>
         
-        <div className="mt-8">
-          <BusinessSearch platformType="partnership" initialSearch={initialSearch} businessId={businessId} />
-        </div>
+        <Tabs defaultValue="search" className="mt-8">
+          <TabsList>
+            <TabsTrigger value="search">Search Businesses</TabsTrigger>
+            <TabsTrigger value="categories">Browse by Category</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="search" className="mt-6">
+            <BusinessSearch platformType="partnership" initialSearch={initialSearch} businessId={businessId} />
+          </TabsContent>
+          
+          <TabsContent value="categories" className="mt-6">
+            <BusinessCategories type="partnerships" onCategorySelect={handleCategorySelect} />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );

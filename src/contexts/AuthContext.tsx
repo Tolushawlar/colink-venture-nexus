@@ -77,7 +77,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         location.pathname.includes('-info') || 
         location.pathname === '/about-us' || 
         location.pathname === '/contact-us' || 
-        location.pathname === '/pricing') {
+        location.pathname === '/pricing' ||
+        location.pathname === '/privacy' ||
+        location.pathname === '/terms' ||
+        location.pathname === '/security' ||
+        location.pathname === '/cookie-policy') {
       setIsLoading(false);
     }
 
@@ -111,6 +115,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           location.pathname === '/about-us' || 
           location.pathname === '/contact-us' || 
           location.pathname === '/pricing' || 
+          location.pathname === '/privacy' ||
+          location.pathname === '/terms' ||
+          location.pathname === '/security' ||
+          location.pathname === '/cookie-policy' ||
           location.pathname.includes('-info');
         
         const skipAutoNavigation = sessionStorage.getItem('skipAutoNavigation') === 'true';
@@ -161,7 +169,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         location.pathname.includes('-info') || 
         location.pathname === '/about-us' || 
         location.pathname === '/contact-us' || 
-        location.pathname === '/pricing';
+        location.pathname === '/pricing' ||
+        location.pathname === '/privacy' ||
+        location.pathname === '/terms' ||
+        location.pathname === '/security' ||
+        location.pathname === '/cookie-policy';
         
       if (!isPublicPage) {
         navigate('/');

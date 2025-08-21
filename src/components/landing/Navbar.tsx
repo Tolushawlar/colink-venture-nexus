@@ -257,6 +257,17 @@ const Navbar = () => {
                     </Avatar>
                     <span className="text-sm font-medium">{user.email}</span>
                   </div>
+                  <Button
+                    variant="outline"
+                    className="w-full flex items-center justify-center gap-2"
+                    onClick={() => {
+                      navigateToDashboard();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <User size={16} />
+                    Go to Dashboard
+                  </Button>
                   {isAdmin && (
                     <Button
                       variant="outline"

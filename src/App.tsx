@@ -25,6 +25,10 @@ import PartnershipsLanding from "./pages/PartnershipsLanding";
 import SponsorshipsLanding from "./pages/SponsorshipsLanding";
 import GoogleAuthCallback from "./components/GoogleAuthCallback";
 import ComingSoon from "./pages/ComingSoon";
+import Privacy from "./pages/Privacy";
+import Security from "./pages/Security";
+import Terms from "./pages/Terms";
+import CookiePolicy from "./pages/CookiePolicy";
 import React from "react";
 
 // Create a new QueryClient instance outside of the component
@@ -113,6 +117,10 @@ const AppRoutes = () => (
         </ProtectedRoute>
       } 
     />
+    <Route path="/privacy" element={<Privacy />} />
+    <Route path="/security" element={<Security />} />
+    <Route path="/terms" element={<Terms />} />
+    <Route path="/cookie-policy" element={<CookiePolicy />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
