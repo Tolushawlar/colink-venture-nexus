@@ -2,11 +2,50 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 const Hero = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const handlePartnershipsClick = (e: React.MouseEvent) => {
+    if (user) {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+      if (currentUser.accountType === 'sponsorship') {
+        e.preventDefault();
+        toast({
+          title: "Account Type Mismatch",
+          description: "Log in with a partnership account to explore partnerships.",
+          variant: "destructive"
+        });
+        return;
+      }
+      navigate('/partnerships');
+    } else {
+      navigate('/partnerships-info');
+    }
+  };
+  
+  const handleSponsorshipsClick = (e: React.MouseEvent) => {
+    if (user) {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+      if (currentUser.accountType === 'partnership') {
+        e.preventDefault();
+        toast({
+          title: "Account Type Mismatch",
+          description: "Log in with a sponsorship account to discover sponsorships.",
+          variant: "destructive"
+        });
+        return;
+      }
+      navigate('/sponsorships');
+    } else {
+      navigate('/sponsorships-info');
+    }
+  };
   
   return (
     <section className="bg-gradient-to-b from-white to-gray-50 pt-10 pb-20">
@@ -21,15 +60,17 @@ const Hero = () => {
               CoLink Venture is an Innovative Platform Designed to Simplify and Accelerate Partnerships and Sponsorships in an Efficient Way to Access Mutually Beneficial Services and Resources.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button className="btn-primary text-base py-6 px-8 flex items-center gap-2" asChild>
-                <Link to={user ? "/partnerships" : "/partnerships-info"}>
-                  Explore Partnerships <ArrowRight size={18} />
-                </Link>
+              <Button 
+                className="btn-primary text-base py-6 px-8 flex items-center gap-2" 
+                onClick={handlePartnershipsClick}
+              >
+                Explore Partnerships <ArrowRight size={18} />
               </Button>
-              <Button className="btn-secondary text-base py-6 px-8 flex items-center gap-2" asChild>
-                <Link to={user ? "/sponsorships" : "/sponsorships-info"}>
-                  Discover Sponsorships <ArrowRight size={18} />
-                </Link>
+              <Button 
+                className="btn-secondary text-base py-6 px-8 flex items-center gap-2" 
+                onClick={handleSponsorshipsClick}
+              >
+                Discover Sponsorships <ArrowRight size={18} />
               </Button>
             </div>
             <p className="text-sm text-gray-500 pt-2">

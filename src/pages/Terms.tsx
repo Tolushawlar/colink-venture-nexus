@@ -115,7 +115,7 @@ const Terms = () => {
               <p className="mb-4">If you have any questions or concerns regarding these Terms, you may contact us at:</p>
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p>Email: info@colinkventure.com</p>
-                <p>Phone: (518) 913-2069</p>
+                {/* <p>Phone: (518) 913-2069</p> */}
               </div>
 
               <h2 className="text-2xl font-bold text-colink-navy mt-8 mb-4">12. Age Restrictions</h2>

@@ -1,11 +1,16 @@
-
 import React, { useState } from "react";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -18,21 +23,23 @@ const ContactUs = () => {
     message: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // In a real app, this would send the data to a backend
     console.log("Form submitted:", formData);
-    
+
     toast({
       title: "Message sent!",
       description: "We've received your message and will get back to you soon.",
     });
-    
+
     // Reset form
     setFormData({
       name: "",
@@ -54,7 +61,8 @@ const ContactUs = () => {
                 Get In <span className="text-colink-teal">Touch</span>
               </h1>
               <p className="text-xl text-gray-600">
-                Have questions or want to learn more? We're here to help. Reach out to our team using the contact information below.
+                Have questions or want to learn more? We're here to help. Reach
+                out to our team using the contact information below.
               </p>
             </div>
           </div>
@@ -70,9 +78,10 @@ const ContactUs = () => {
                   Send Us a Message
                 </h2>
                 <p className="text-gray-600 mb-8">
-                  Fill out the form below, and we'll get back to you as soon as possible.
+                  Fill out the form below, and we'll get back to you as soon as
+                  possible.
                 </p>
-                
+
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
@@ -103,7 +112,7 @@ const ContactUs = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label htmlFor="subject" className="text-sm font-medium">
                       Subject
@@ -117,7 +126,7 @@ const ContactUs = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label htmlFor="message" className="text-sm font-medium">
                       Message
@@ -132,22 +141,23 @@ const ContactUs = () => {
                       required
                     />
                   </div>
-                  
+
                   <Button type="submit" className="w-full py-6">
                     Send Message
                   </Button>
                 </form>
               </div>
-              
+
               {/* Contact Information */}
               <div>
                 <h2 className="text-3xl font-bold text-colink-navy mb-6">
                   Contact Information
                 </h2>
                 <p className="text-gray-600 mb-8">
-                  You can reach us through the following channels or visit our office during business hours.
+                  You can reach us through the following channels or visit our
+                  office during business hours.
                 </p>
-                
+
                 <div className="grid gap-6">
                   <Card>
                     <CardHeader className="pb-3">
@@ -157,12 +167,15 @@ const ContactUs = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <a href="mailto:info@colinkventure.com" className="text-colink-blue hover:underline">
+                      <a
+                        href="mailto:info@colinkventure.com"
+                        className="text-colink-blue hover:underline"
+                      >
                         info@colinkventure.com
                       </a>
                     </CardContent>
                   </Card>
-                  
+                  {/*                   
                   <Card>
                     <CardHeader className="pb-3">
                       <CardTitle className="flex items-center gap-2">
@@ -204,13 +217,13 @@ const ContactUs = () => {
                       <p>Monday - Friday: 9:00 AM - 5:00 PM</p>
                       <p>Saturday - Sunday: Closed</p>
                     </CardContent>
-                  </Card>
+                  </Card> */}
                 </div>
               </div>
             </div>
           </div>
         </section>
-        
+
         {/* Map Section */}
         <section className="h-[400px] bg-gray-200">
           <iframe

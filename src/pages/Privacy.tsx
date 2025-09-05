@@ -135,7 +135,7 @@ const Privacy = () => {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <p><strong>CoLink Venture</strong></p>
                 <p>Email: info@colinkventure.com</p>
-                <p>Phone: (518) 913-2069</p>
+                {/* <p>Phone: (518) 913-2069</p> */}
               </div>
             </div>
           </div>

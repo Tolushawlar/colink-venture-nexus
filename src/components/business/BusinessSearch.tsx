@@ -63,15 +63,21 @@ const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSe
         const businessesData = await businessesResponse.json();
         const usersData = await usersResponse.json();
         
-        // Create a map of user emails to account types for quick lookup
+        // Create a map of user IDs to account types for quick lookup
         const userAccountTypes = new Map();
         usersData.users.forEach((user: any) => {
-          userAccountTypes.set(user.email, user.accountType);
+          userAccountTypes.set(user.id, user.account_type || user.accountType);
         });
         
-        // Get current user ID
+        // Get current user data
         const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
         const currentUserId = currentUser.id;
+        const currentUserAccountType = currentUser.accountType;
+        
+        console.log('Debug - Current User:', currentUser);
+        console.log('Debug - Platform Type:', platformType);
+        console.log('Debug - Total Businesses:', businessesData.businesses?.length);
+        console.log('Debug - User Account Types Map:', userAccountTypes);
         
         // Process and filter businesses
         const filteredBusinesses = businessesData.businesses
@@ -84,11 +90,31 @@ const BusinessSearch: React.FC<BusinessSearchProps> = ({ platformType, initialSe
           .filter((business: any) => {
             // Exclude current user's own business
             if (business.owner_id === currentUserId || business.ownerId === currentUserId) {
+              console.log('Debug - Excluding own business:', business.name);
               return false;
             }
-            // Show all other businesses
-            return true;
+            
+            // Get the account type of the business owner
+            const businessOwnerAccountType = userAccountTypes.get(business.owner_id || business.ownerId);
+            console.log('Debug - Business:', business.name, 'Owner ID:', business.owner_id || business.ownerId, 'Owner Account Type:', businessOwnerAccountType);
+            
+            // Filter based on platform type and account type matching:
+            // Partnership dashboard shows businesses from partnership users
+            // Sponsorship dashboard shows businesses from sponsorship users
+            if (platformType === 'partnership') {
+              const shouldShow = businessOwnerAccountType === 'partnership';
+              console.log('Debug - Partnership check:', shouldShow);
+              return shouldShow;
+            } else if (platformType === 'sponsorship') {
+              const shouldShow = businessOwnerAccountType === 'sponsorship';
+              console.log('Debug - Sponsorship check:', shouldShow);
+              return shouldShow;
+            }
+            
+            return false;
           });
+        
+        console.log('Debug - Filtered Businesses Count:', filteredBusinesses.length);
         
         setBusinesses(filteredBusinesses);
       } catch (error) {
