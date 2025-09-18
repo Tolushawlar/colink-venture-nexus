@@ -43,7 +43,11 @@ const formSchema = z.object({
   accountType: z.enum(["partnership", "sponsorship"] as const),
   displayName: z.string().min(2, "Display name must be at least 2 characters"),
   bio: z.string().optional(),
-  website: z.string().url("Please enter a valid website URL").optional().or(z.literal("")),
+  website: z
+    .string()
+    .url("Please enter a valid website URL")
+    .optional()
+    .or(z.literal("")),
   industry: z.string().min(1, "Please select an industry"),
   interests: z.string().optional(),
   // Business info
@@ -51,7 +55,11 @@ const formSchema = z.object({
   businessDescription: z.string().optional(),
   services: z.string().optional(),
   // Contact info
-  email: z.string().email("Please enter a valid email").optional().or(z.literal("")),
+  email: z
+    .string()
+    .email("Please enter a valid email")
+    .optional()
+    .or(z.literal("")),
   phone: z.string().optional(),
   address: z.string().optional(),
 });
@@ -69,10 +77,12 @@ const industries = [
   "Business and Entrepreneurship",
   "Community Development",
   "Nonprofit and Philanthropy",
-  "Sports Sponsorship",
-  "Music and Entertainment Sponsorship",
-  "Charitable Sponsorship",
-  "Cultural and Arts Sponsorship"
+  "Sports Sponsorships",
+  "Entertainment Sponsorships",
+  "Art and Culture Sponsorships",
+  "Charitable Sponsorships",
+  "Corporate Sponsorships",
+  "Non-Profit Sponsorships",
 ];
 
 const Onboarding = () => {
@@ -113,8 +123,8 @@ const Onboarding = () => {
       });
 
       // Update user profile with the form values
-      const profileResponse = await authenticatedApiCall('/users/profile', {
-        method: 'PUT',
+      const profileResponse = await authenticatedApiCall("/users/profile", {
+        method: "PUT",
         body: JSON.stringify({
           accountType: values.accountType,
           displayName: values.displayName,
@@ -122,62 +132,69 @@ const Onboarding = () => {
           website: values.website,
           industry: values.industry,
           interests: values.interests,
-          avatarUrl: profileImage
+          avatarUrl: profileImage,
         }),
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       });
-      
+
       if (!profileResponse.ok) {
         const errorText = await profileResponse.text();
-        console.error('Profile update failed:', errorText);
-        throw new Error('Failed to update profile');
+        console.error("Profile update failed:", errorText);
+        throw new Error("Failed to update profile");
       }
 
       // Map form values to business API payload
       const businessPayload = {
         name: values.businessName || values.displayName,
         description: values.businessDescription || values.bio,
-        logo: profileImage  || "", // Use the uploaded profile image as the logo
+        logo: profileImage || "", // Use the uploaded profile image as the logo
         industry: values.industry,
         // Split and trim services/interests if they are comma-separated strings
-        partnershipOffers: values.services?.split(',').map(s => s.trim()).filter(Boolean),
-        sponsorshipOffers: values.interests?.split(',').map(s => s.trim()).filter(Boolean),
+        partnershipOffers: values.services
+          ?.split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+        sponsorshipOffers: values.interests
+          ?.split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
         website: values.website,
         email: values.email,
         phone: values.phone,
         location: values.address,
-        gallery: galleryImages // Use the uploaded gallery images
+        gallery: galleryImages, // Use the uploaded gallery images
       };
 
       try {
-        console.log('Creating business with payload:', businessPayload);
-        
+        console.log("Creating business with payload:", businessPayload);
+
         // Call business API to create a new business entry
-        const response = await authenticatedApiCall('/businesses/', {
-          method: 'POST',
+        const response = await authenticatedApiCall("/businesses/", {
+          method: "POST",
           body: JSON.stringify(businessPayload),
           headers: {
-            'Content-Type': 'application/json'
-          }
+            "Content-Type": "application/json",
+          },
         });
 
-        console.log('Business API response status:', response.status);
+        console.log("Business API response status:", response.status);
 
         if (!response.ok) {
           const errorText = await response.text();
           console.error("Business API error:", response.status, errorText);
-          
+
           toast({
             title: "Warning",
-            description: "Profile created but business details may not have been saved completely.",
-            variant: "destructive"
+            description:
+              "Profile created but business details may not have been saved completely.",
+            variant: "destructive",
           });
         } else {
           const businessData = await response.json();
-          console.log('Business profile created successfully:', businessData);
-          
+          console.log("Business profile created successfully:", businessData);
+
           toast({
             title: "Success",
             description: "Business profile created successfully!",
@@ -185,11 +202,12 @@ const Onboarding = () => {
         }
       } catch (apiError) {
         console.error("Business API error:", apiError);
-        
+
         toast({
           title: "Warning",
-          description: "Profile created but business details may not have been saved.",
-          variant: "destructive"
+          description:
+            "Profile created but business details may not have been saved.",
+          variant: "destructive",
         });
       }
 
@@ -200,23 +218,25 @@ const Onboarding = () => {
       });
 
       // Store account type in sessionStorage (without quotes)
-      sessionStorage.setItem('accountType', values.accountType);
-      console.log('Setting accountType in sessionStorage:', values.accountType);
-      
+      sessionStorage.setItem("accountType", values.accountType);
+      console.log("Setting accountType in sessionStorage:", values.accountType);
+
       // Remove onboarded flag from sessionStorage
-      sessionStorage.removeItem('onboarded');
-      console.log('Removed onboarded flag from sessionStorage');
-      
+      sessionStorage.removeItem("onboarded");
+      console.log("Removed onboarded flag from sessionStorage");
+
       // Navigate to the appropriate dashboard based on account type after successful API call
       const accountType = values.accountType;
       console.log(`Navigating to /${accountType}s dashboard after onboarding`);
       navigate(`/${accountType}s`);
-
     } catch (error) {
       console.error("Error setting up profile:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "There was a problem setting up your profile",
+        description:
+          error instanceof Error
+            ? error.message
+            : "There was a problem setting up your profile",
         variant: "destructive",
       });
     }
@@ -230,34 +250,36 @@ const Onboarding = () => {
     setStep(step - 1);
   };
 
-  const handleProfileImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfileImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    
+
     setIsUploading(true);
-    
+
     const formData = new FormData();
-    formData.append('image', file);
-    
+    formData.append("image", file);
+
     try {
       // Upload image to Cloudinary via backend
-      const response = await authenticatedApiCall('/uploads', {
-        method: 'POST',
+      const response = await authenticatedApiCall("/uploads", {
+        method: "POST",
         body: formData,
-        headers: {}
+        headers: {},
       });
-      
+
       const data = await response.json();
       const imageUrl = data.data.imageUrl;
       console.log("Image uploaded successfully:", imageUrl);
       setProfileImage(imageUrl);
-      
+
       toast({
-        title: "Image uploaded", 
+        title: "Image uploaded",
         description: "Your profile picture has been updated.",
       });
     } catch (error: any) {
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
       toast({
         title: "Upload failed",
         description: "Failed to upload image. Please try again.",
@@ -268,41 +290,43 @@ const Onboarding = () => {
     }
   };
 
-  const handleGalleryImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleGalleryImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
-    
+
     setIsGalleryUploading(true);
-    
+
     try {
       const uploadedUrls: string[] = [];
-      
+
       // Upload each image to Cloudinary
       for (const file of Array.from(files)) {
         const formData = new FormData();
-        formData.append('image', file);
-        
-        const response = await authenticatedApiCall('/uploads', {
-          method: 'POST',
+        formData.append("image", file);
+
+        const response = await authenticatedApiCall("/uploads", {
+          method: "POST",
           body: formData,
-          headers: {}
+          headers: {},
         });
-        
+
         const data = await response.json();
         const imageUrl = data.data.imageUrl;
         console.log(imageUrl);
         uploadedUrls.push(imageUrl);
       }
-      
+
       // Add the new image URLs to the gallery
       setGalleryImages([...galleryImages, ...uploadedUrls]);
-      
+
       toast({
         title: "Images uploaded",
         description: `Successfully uploaded ${uploadedUrls.length} images.`,
       });
     } catch (error: any) {
-      console.error('Gallery upload error:', error);
+      console.error("Gallery upload error:", error);
       toast({
         title: "Upload failed",
         description: "Failed to upload gallery images. Please try again.",
@@ -350,17 +374,30 @@ const Onboarding = () => {
                               className="flex flex-col space-y-2"
                             >
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="partnership" id="partnership" />
-                                <label htmlFor="partnership" className="font-medium">
+                                <RadioGroupItem
+                                  value="partnership"
+                                  id="partnership"
+                                />
+                                <label
+                                  htmlFor="partnership"
+                                  className="font-medium"
+                                >
                                   Partnerships
                                   <p className="text-sm text-muted-foreground">
-                                    Find strategic business partners and collaborators
+                                    Find strategic business partners and
+                                    collaborators
                                   </p>
                                 </label>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="sponsorship" id="sponsorship" />
-                                <label htmlFor="sponsorship" className="font-medium">
+                                <RadioGroupItem
+                                  value="sponsorship"
+                                  id="sponsorship"
+                                />
+                                <label
+                                  htmlFor="sponsorship"
+                                  className="font-medium"
+                                >
                                   Sponsorships
                                   <p className="text-sm text-muted-foreground">
                                     Find sponsors for your initiatives or events
@@ -380,7 +417,10 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>Display Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Your name or organization name" {...field} />
+                            <Input
+                              placeholder="Your name or organization name"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -390,26 +430,39 @@ const Onboarding = () => {
                     <FormField
                       control={form.control}
                       name="industry"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Industry</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select your industry" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {industries.map((industry) => (
-                                <SelectItem key={industry} value={industry.toLowerCase()}>
-                                  {industry}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                      render={({ field }) => {
+                        const accountType = form.watch("accountType");
+                        const filteredIndustries = accountType === "partnership" 
+                          ? industries.slice(0, 12) 
+                          : industries.slice(-6);
+                        
+                        return (
+                          <FormItem>
+                            <FormLabel>Industry</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select your industry" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {filteredIndustries.map((industry) => (
+                                  <SelectItem
+                                    key={industry}
+                                    value={industry.toLowerCase()}
+                                  >
+                                    {industry}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
 
                     <div className="flex flex-col items-center pt-4">
@@ -432,7 +485,9 @@ const Onboarding = () => {
                           ) : (
                             <Camera className="h-4 w-4" />
                           )}
-                          <span className="sr-only">Upload profile picture</span>
+                          <span className="sr-only">
+                            Upload profile picture
+                          </span>
                         </label>
                         <input
                           id="profile-image"
@@ -480,7 +535,10 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>Website (optional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="https://yourwebsite.com" {...field} />
+                            <Input
+                              placeholder="https://yourwebsite.com"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -488,10 +546,15 @@ const Onboarding = () => {
                     />
 
                     <div className="space-y-2">
-                      <h3 className="text-sm font-medium mb-1">Gallery Images (optional)</h3>
+                      <h3 className="text-sm font-medium mb-1">
+                        Gallery Images (optional)
+                      </h3>
                       <div className="flex flex-wrap gap-2">
                         {galleryImages.map((image, index) => (
-                          <div key={index} className="relative w-20 h-20 border rounded">
+                          <div
+                            key={index}
+                            className="relative w-20 h-20 border rounded"
+                          >
                             <img
                               src={image}
                               alt={`Gallery ${index + 1}`}
@@ -542,7 +605,10 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>Business/Organization Name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Your business or organization name" {...field} />
+                            <Input
+                              placeholder="Your business or organization name"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -599,7 +665,11 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>Contact Email</FormLabel>
                           <FormControl>
-                            <Input type="email" placeholder="contact@yourorganization.com" {...field} />
+                            <Input
+                              type="email"
+                              placeholder="contact@yourorganization.com"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -613,7 +683,10 @@ const Onboarding = () => {
                         <FormItem>
                           <FormLabel>Phone Number (optional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="Your contact phone number" {...field} />
+                            <Input
+                              placeholder="Your contact phone number"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -646,7 +719,9 @@ const Onboarding = () => {
                           <FormLabel>Interests & Goals</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder={`What kind of ${form.getValues("accountType")} opportunities are you looking for?`}
+                              placeholder={`What kind of ${form.getValues(
+                                "accountType"
+                              )} opportunities are you looking for?`}
                               className="min-h-32"
                               {...field}
                             />
@@ -660,9 +735,12 @@ const Onboarding = () => {
                     />
 
                     <div className="mt-6">
-                      <h3 className="font-medium">Plan Selected: {user?.user_metadata?.plan || "Free"}</h3>
+                      <h3 className="font-medium">
+                        Plan Selected: {user?.user_metadata?.plan || "Free"}
+                      </h3>
                       <p className="text-sm text-muted-foreground mt-1">
-                        You can change your plan anytime from your account settings.
+                        You can change your plan anytime from your account
+                        settings.
                       </p>
                     </div>
                   </div>
@@ -671,36 +749,50 @@ const Onboarding = () => {
 
               <CardFooter className="flex justify-between">
                 {step > 1 ? (
-                  <Button variant="outline" type="button" onClick={prevStep}>Back</Button>
+                  <Button variant="outline" type="button" onClick={prevStep}>
+                    Back
+                  </Button>
                 ) : (
-                  <Button variant="outline" type="button" onClick={() => navigate("/")}>Cancel</Button>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => navigate("/")}
+                  >
+                    Cancel
+                  </Button>
                 )}
 
                 {step < 4 ? (
-                  <Button type="button" onClick={(e) => {
-                    e.preventDefault(); // Prevent form submission
-                    nextStep();
-                  }}>Continue</Button>
+                  <Button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent form submission
+                      nextStep();
+                    }}
+                  >
+                    Continue
+                  </Button>
                 ) : (
-                  <Button 
-                    type="button" 
+                  <Button
+                    type="button"
                     onClick={async () => {
-                      console.log('Complete Setup clicked');
-                      console.log('Form values:', form.getValues());
-                      console.log('Form errors:', form.formState.errors);
-                      
+                      console.log("Complete Setup clicked");
+                      console.log("Form values:", form.getValues());
+                      console.log("Form errors:", form.formState.errors);
+
                       const isValid = await form.trigger();
-                      console.log('Form is valid:', isValid);
-                      
+                      console.log("Form is valid:", isValid);
+
                       if (isValid) {
                         const values = form.getValues();
                         await handleSubmit(values);
                       } else {
-                        console.log('Form validation failed');
+                        console.log("Form validation failed");
                         toast({
                           title: "Validation Error",
-                          description: "Please check all fields, and fill in all required fields.",
-                          variant: "destructive"
+                          description:
+                            "Please check all fields, and fill in all required fields.",
+                          variant: "destructive",
                         });
                       }
                     }}
@@ -708,7 +800,6 @@ const Onboarding = () => {
                     Complete Setup
                   </Button>
                 )}
-
               </CardFooter>
             </form>
           </Form>
@@ -718,26 +809,50 @@ const Onboarding = () => {
       <div className="hidden md:block md:w-1/2 bg-colink-navy p-12">
         <div className="h-full flex flex-col justify-center text-white max-w-md mx-auto">
           <h2 className="text-3xl font-bold mb-6">
-            {step === 1 ? 'Welcome to CoLink Venture!' :
-              step === 2 ? 'Tell us your story' :
-                step === 3 ? 'Business Details' :
-                  'Almost there!'}
+            {step === 1
+              ? "Welcome to CoLink Venture!"
+              : step === 2
+              ? "Tell us your story"
+              : step === 3
+              ? "Business Details"
+              : "Almost there!"}
           </h2>
           <p className="mb-6 text-lg">
-            {step === 1 ? 'First, let\'s understand your needs so we can tailor your experience.' :
-              step === 2 ? 'Share more about yourself or your organization to attract the right partners.' :
-                step === 3 ? 'Tell us about your business or services so we can showcase them to potential partners.' :
-                  'Just a few more details to help us find the perfect matches for you.'}
+            {step === 1
+              ? "First, let's understand your needs so we can tailor your experience."
+              : step === 2
+              ? "Share more about yourself or your organization to attract the right partners."
+              : step === 3
+              ? "Tell us about your business or services so we can showcase them to potential partners."
+              : "Just a few more details to help us find the perfect matches for you."}
           </p>
           <div className="flex space-x-2 mb-8">
-            <div className={`h-2 flex-1 rounded ${step >= 1 ? 'bg-white' : 'bg-white/30'}`}></div>
-            <div className={`h-2 flex-1 rounded ${step >= 2 ? 'bg-white' : 'bg-white/30'}`}></div>
-            <div className={`h-2 flex-1 rounded ${step >= 3 ? 'bg-white' : 'bg-white/30'}`}></div>
-            <div className={`h-2 flex-1 rounded ${step >= 4 ? 'bg-white' : 'bg-white/30'}`}></div>
+            <div
+              className={`h-2 flex-1 rounded ${
+                step >= 1 ? "bg-white" : "bg-white/30"
+              }`}
+            ></div>
+            <div
+              className={`h-2 flex-1 rounded ${
+                step >= 2 ? "bg-white" : "bg-white/30"
+              }`}
+            ></div>
+            <div
+              className={`h-2 flex-1 rounded ${
+                step >= 3 ? "bg-white" : "bg-white/30"
+              }`}
+            ></div>
+            <div
+              className={`h-2 flex-1 rounded ${
+                step >= 4 ? "bg-white" : "bg-white/30"
+              }`}
+            ></div>
           </div>
           <div className="border-t border-white/20 pt-6">
             <blockquote className="italic">
-              "CoLink Venture has transformed how we find business partnerships. We've closed deals that would have taken months to find otherwise."
+              "CoLink Venture has transformed how we find business partnerships.
+              We've closed deals that would have taken months to find
+              otherwise."
             </blockquote>
             <div className="mt-4 font-medium">
               - Sarah Johnson, Marketing Director

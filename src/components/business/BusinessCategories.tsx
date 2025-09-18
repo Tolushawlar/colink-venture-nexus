@@ -39,16 +39,35 @@ const BusinessCategories: React.FC<BusinessCategoriesProps> = ({
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await authenticatedApiCall(
-        `/businesses/categories/${type}`
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data.categories || []);
-      } else {
-        throw new Error("Failed to fetch categories");
-      }
+      
+      // Define the same industries array as in onboarding
+      const allIndustries = [
+        "School and Education",
+        "Social Service",
+        "Healthcare",
+        "Art & Culture",
+        "Government",
+        "Recreation",
+        "Food and Hospitality",
+        "Technology",
+        "Environment",
+        "Business and Entrepreneurship",
+        "Community Development",
+        "Nonprofit and Philanthropy",
+        "Sports Sponsorships",
+        "Entertainment Sponsorships",
+        "Art and Culture Sponsorships",
+        "Charitable Sponsorships",
+        "Corporate Sponsorships",
+        "Non-Profit Sponsorships",
+      ];
+      
+      // Filter categories based on type
+      const filteredCategories = type === "partnerships" 
+        ? allIndustries.slice(0, 12) 
+        : allIndustries.slice(-6);
+      
+      setCategories(filteredCategories);
     } catch (error) {
       console.error("Error fetching categories:", error);
       toast({
@@ -262,7 +281,8 @@ const BusinessCategories: React.FC<BusinessCategoriesProps> = ({
               <div className="text-center py-8">
                 <Building className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                 <p className="text-gray-500">
-                  No businesses found in this category. Please log in with a {type === 'partnerships' ? 'sponsorship' : 'partnership'} account to view businesses.                </p>
+                    No businesses found in this category. </p>
+                  {/* No businesses found in this category. Please log in with a {type === 'partnerships' ? 'sponsorship' : 'partnership'} account to view businesses.                </p> */}
               </div>
             )}
           </div>
