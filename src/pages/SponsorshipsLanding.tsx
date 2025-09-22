@@ -120,7 +120,7 @@ const SponsorshipsLanding = () => {
               </h1>
               <p className="text-xl text-gray-600 mb-8">
                 {/* Through our platform, individuals and organizations can form mutually beneficial partnerships, leveraging each other's strengths and resources to drive meaningful change. */}
-                At CoLink Venture, we recongize how vital sponsorship is for sports, entertainment m adn noprofit organizations. By patnering with individuals, businesses, and corporations, these organizations can improve their events and make a positive impact in their communities.
+                At CoLink Venture, we understand the power of sponsorship in creating meaningful connections between brands and their target audience. We specialize in helping businesses and organizations find the perfect sponsorship opportunities that align with their goals, values, and target market. Whether you are looking to sponsor a sports event, a music festival, a charitable cause, or any other type of sponsorship, we have you covered.
               </p>
               {!user && (
                 <Button className="btn-primary text-base py-6 px-8" asChild>
@@ -138,7 +138,7 @@ const SponsorshipsLanding = () => {
               <h2 className="text-3xl font-bold text-colink-navy mb-4">SPONSORSHIPS</h2>
               <p className="text-xl text-colink-teal mb-6">Dedicating everything to Brand Sponsorships</p>
               <p className="text-gray-600">
-                At CoLink Venture, we understand the power of sponsorship in creating meaningful connections between brands and their target audience. We specialize in helping businesses and organizations find the perfect sponsorship opportunities that align with their goals, values, and target market. Whether you are looking to sponsor a sports event, a music festival, a charitable cause, or any other type of sponsorship, we have you covered.
+                At CoLink Venture, we recongize how vital sponsorship is for sports, entertainment m adn noprofit organizations. By patnering with individuals, businesses, and corporations, these organizations can improve their events and make a positive impact in their communities.
               </p>
             </div>
             
